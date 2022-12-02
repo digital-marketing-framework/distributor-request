@@ -1,0 +1,77 @@
+{
+    "name": "digital-marketing-framework/distributor-request",
+    "type": "library",
+    "description": "FormRelay route and dispatcher for (http) requests.",
+    "keywords": [
+        "framework",
+        "form",
+        "data",
+        "submission",
+        "relay",
+        "request"
+    ],
+    "homepage": "https://www.mediatis.de",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Michael Vöhringer",
+            "role": "Developer"
+        },
+        {
+            "name": "Meelis Karulin",
+            "role": "Developer"
+        },
+        {
+            "name": "Damian Ickler",
+            "role": "Developer"
+        },
+        {
+            "name": "Stephan Ude",
+            "role": "Developer"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:digital-marketing-framework/distributor-core.git",
+            "only": [
+                "digital-marketing-framework/distributor-core"
+            ]
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:digital-marketing-framework/core.git",
+            "only": [
+                "digital-marketing-framework/core"
+            ]
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^8.1",
+        "guzzlehttp/guzzle": "^7.0",
+        "digital-marketing-framework/distributor-core": "dev-main"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "DigitalMarketingFramework\\Distributor\\Request\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DigitalMarketingFramework\\Distributor\\Request\\Tests\\": "tests/",
+            "DigitalMarketingFramework\\Distributor\\Core\\Tests\\": "vendor/digital-marketing-framework/distributor-core/tests/",
+            "DigitalMarketingFramework\\Core\\Tests\\": "vendor/digital-marketing-framework/core/tests/"
+        }
+    },
+    "scripts": {
+      "test": "./vendor/bin/phpunit --bootstrap vendor/autoload.php tests/",
+      "testdox": "./vendor/bin/phpunit --bootstrap vendor/autoload.php --testdox --colors=always tests/"
+    }
+}
