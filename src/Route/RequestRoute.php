@@ -3,6 +3,7 @@
 namespace DigitalMarketingFramework\Distributor\Request\Route;
 
 use DigitalMarketingFramework\Core\Context\ContextInterface;
+use DigitalMarketingFramework\Core\Service\DataProcessorInterface;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcherInterface;
 use DigitalMarketingFramework\Distributor\Core\Route\Route;
 use DigitalMarketingFramework\Distributor\Request\DataDispatcher\RequestDataDispatcherInterface;
@@ -10,11 +11,11 @@ use DigitalMarketingFramework\Distributor\Request\Exception\InvalidUrlException;
 
 class RequestRoute extends Route
 {
-    const KEY_URL = 'url';
-    const DEFAULT_URL = '';
+    protected const KEY_URL = 'url';
+    protected const DEFAULT_URL = '';
 
-    const KEYWORD_PASSTHROUGH = '__PASSTHROUGH';
-    const KEYWORD_UNSET = '__UNSET';
+    protected const KEYWORD_PASSTHROUGH = '__PASSTHROUGH';
+    protected const KEYWORD_UNSET = '__UNSET';
 
     /*
      * example cookie configurations
@@ -32,8 +33,8 @@ class RequestRoute extends Route
      *     cookieNameRegexpPattern3: __PASSTHROUGH
      *     cookieName4: __UNSET
      */
-    const KEY_COOKIES = 'cookies';
-    const DEFAULT_COOKIES = [];
+    protected const KEY_COOKIES = 'cookies';
+    protected const DEFAULT_COOKIES = [];
 
     /*
      * example header configurations
@@ -49,8 +50,11 @@ class RequestRoute extends Route
      *     Accept: application/json
      *     Content-Type: __UNSET
      */
-    const KEY_HEADERS = 'headers';
-    const DEFAULT_HEADERS = [];
+    protected const KEY_HEADERS = 'headers';
+    protected const DEFAULT_HEADERS = [];
+
+    protected const KEY_FIELDS = DataProcessorInterface::KEY_FIELDS;
+    protected const DEFAULT_FIELDS = DataProcessorInterface::DEFAULT_FIELDS;
     
     protected function getUrl(): string
     {
@@ -247,12 +251,14 @@ class RequestRoute extends Route
 
     public static function getDefaultConfiguration(): array
     {
-        return [
-            static::KEY_ENABLED => static::DEFAULT_ENABLED,
-            static::KEY_URL => static::DEFAULT_URL,
-            static::KEY_COOKIES => static::DEFAULT_COOKIES,
-            static::KEY_HEADERS => static::DEFAULT_HEADERS,
-        ]
-        + parent::getDefaultConfiguration();
+        $config = [
+                static::KEY_ENABLED => static::DEFAULT_ENABLED,
+                static::KEY_URL => static::DEFAULT_URL,
+                static::KEY_COOKIES => static::DEFAULT_COOKIES,
+                static::KEY_HEADERS => static::DEFAULT_HEADERS,
+            ]
+            + parent::getDefaultConfiguration();
+        $config[static::KEY_FIELDS] = static::DEFAULT_FIELDS;
+        return $config;
     }
 }
