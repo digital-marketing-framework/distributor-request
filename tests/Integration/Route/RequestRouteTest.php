@@ -6,8 +6,8 @@ use DigitalMarketingFramework\Core\Exception\DigitalMarketingFrameworkException;
 use DigitalMarketingFramework\Core\Log\LoggerInterface;
 use DigitalMarketingFramework\Distributor\Core\Tests\Integration\RegistryTestTrait;
 use DigitalMarketingFramework\Distributor\Core\Tests\Integration\SubmissionTestTrait;
-use DigitalMarketingFramework\Distributor\Request\RequestInitialization;
-use DigitalMarketingFramework\Distributor\Request\RequestRouteInitialization;
+use DigitalMarketingFramework\Distributor\Request\DistributorPluginInitialization;
+use DigitalMarketingFramework\Distributor\Request\DistributorRouteInitialization;
 use DigitalMarketingFramework\Distributor\Request\Route\RequestRoute;
 use DigitalMarketingFramework\Distributor\Request\Tests\Spy\DataDispatcher\RequestDataDispatcherSpyInterface;
 use DigitalMarketingFramework\Distributor\Request\Tests\Spy\DataDispatcher\SpiedOnRequestDataDispatcher;
@@ -29,8 +29,8 @@ class RequestRouteTest extends TestCase
         parent::setUp();
 
         $this->initRegistry();
-        RequestInitialization::initialize($this->registry);
-        RequestRouteInitialization::initialize($this->registry);
+        DistributorPluginInitialization::initialize($this->registry);
+        DistributorRouteInitialization::initialize($this->registry);
 
         $this->logger = $this->createMock(LoggerInterface::class);
         
@@ -71,8 +71,10 @@ class RequestRouteTest extends TestCase
         $this->addRouteConfiguration('request', [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'fields' => [
-                'field_a' => 'value_a',
+            'data' => [
+                'fields' => [
+                    'field_a' => 'value_a',
+                ],
             ],
         ]);
 
@@ -103,8 +105,10 @@ class RequestRouteTest extends TestCase
 
         $this->addRouteConfiguration('request', [
             'enabled' => true,
-            'fields' => [
-                'field_a' => 'value_a',
+            'data' => [
+                'fields' => [
+                    'field_a' => 'value_a',
+                ],
             ],
         ]);
 
@@ -135,8 +139,10 @@ class RequestRouteTest extends TestCase
         $this->addRouteConfiguration('request', [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'fields' => [
-                'field_a' => 'value_a',
+            'data' => [
+                'fields' => [
+                    'field_a' => 'value_a',
+                ],
             ],
             'cookies' => [
                 'cookie1',
@@ -196,8 +202,10 @@ class RequestRouteTest extends TestCase
         $this->addRouteConfiguration('request', [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'fields' => [
-                'field_a' => 'value_a',
+            'data' => [
+                'fields' => [
+                    'field_a' => 'value_a',
+                ],
             ],
             'cookies' => [
                 'cookie1' => '__PASSTHROUGH',
@@ -258,8 +266,10 @@ class RequestRouteTest extends TestCase
         $this->addRouteConfiguration('request', [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'fields' => [
-                'field_a' => ['field' => 'field_a'],
+            'data' => [
+                'fields' => [
+                    'field_a' => ['field' => 'field_a'],
+                ],
             ],
             'cookies' => [
                 'cookie1' => [
@@ -333,8 +343,10 @@ class RequestRouteTest extends TestCase
         $this->addRouteConfiguration('request', [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'fields' => [
-                'field_a' => 'value_a',
+            'data' => [
+                'fields' => [
+                    'field_a' => 'value_a',
+                ],
             ],
             'headers' => [
                 'header1',
@@ -387,8 +399,10 @@ class RequestRouteTest extends TestCase
         $this->addRouteConfiguration('request', [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'fields' => [
-                'field_a' => 'value_a',
+            'data' => [
+                'fields' => [
+                    'field_a' => 'value_a',
+                ],
             ],
             'headers' => [
                 'header1' => '__PASSTHROUGH',
@@ -442,8 +456,10 @@ class RequestRouteTest extends TestCase
         $this->addRouteConfiguration('request', [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'fields' => [
-                'field_a' => ['field' => 'field_a'],
+            'data' => [
+                'fields' => [
+                    'field_a' => ['field' => 'field_a'],
+                ],
             ],
             'headers' => [
                 'header1' => [
@@ -517,8 +533,10 @@ class RequestRouteTest extends TestCase
         $this->addRouteConfiguration('request', [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'fields' => [
-                'field_a' => ['field' => 'field_a'],
+            'data' => [
+                'fields' => [
+                    'field_a' => ['field' => 'field_a'],
+                ],
             ],
             'headers' => [
                 'Custom-Header',

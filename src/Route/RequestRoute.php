@@ -258,7 +258,7 @@ class RequestRoute extends Route
                 static::KEY_HEADERS => static::DEFAULT_HEADERS,
             ]
             + parent::getDefaultConfiguration();
-        $config[static::KEY_FIELDS] = static::DEFAULT_FIELDS;
+        $config[static::KEY_DATA][static::KEY_FIELDS] = static::DEFAULT_FIELDS;
         return $config;
     }
 }
