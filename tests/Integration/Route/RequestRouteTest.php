@@ -39,6 +39,7 @@ class RequestRouteTest extends TestCase
 
     protected function registerRequestDataDispatcherSpy(): RequestDataDispatcherSpyInterface&MockObject
     {
+        /** @var RequestDataDispatcherSpyInterface&MockObject $spy */
         $spy = $this->createMock(RequestDataDispatcherSpyInterface::class);
         $this->registry->registerDataDispatcher(SpiedOnRequestDataDispatcher::class, [$spy], 'request');
         return $spy;
@@ -73,7 +74,10 @@ class RequestRouteTest extends TestCase
             'url' => 'https://my-endpoint.tld/api/foo',
             'data' => [
                 'fields' => [
-                    'field_a' => 'value_a',
+                    'enabled' => true,
+                    'fields' => [
+                        'field_a' => ['data' => ['type' => 'constant', 'config' => [ 'constant' => [ 'value' => 'value_a' ] ]], 'modifiers' => []],
+                    ]
                 ],
             ],
         ]);
@@ -82,6 +86,7 @@ class RequestRouteTest extends TestCase
         $submission = $this->getSubmission();
         $this->subject = new RequestRoute('request', $this->registry, $submission, 0);
         $this->subject->setLogger($this->logger);
+        $this->subject->setDataProcessor($this->registry->getDataProcessor());
         
         // process context
         $this->subject->addContext($this->context);
@@ -107,7 +112,10 @@ class RequestRouteTest extends TestCase
             'enabled' => true,
             'data' => [
                 'fields' => [
-                    'field_a' => 'value_a',
+                    'enabled' => true,
+                    'fields' => [
+                        'field_a' => ['data' => ['type' => 'constant', 'config' => [ 'constant' => [ 'value' => 'value_a' ] ]], 'modifiers' => []],
+                    ]
                 ],
             ],
         ]);
@@ -116,6 +124,7 @@ class RequestRouteTest extends TestCase
         $submission = $this->getSubmission();
         $this->subject = new RequestRoute('request', $this->registry, $submission, 0);
         $this->subject->setLogger($this->logger);
+        $this->subject->setDataProcessor($this->registry->getDataProcessor());
         
         // process context
         $this->subject->addContext($this->context);
@@ -141,14 +150,17 @@ class RequestRouteTest extends TestCase
             'url' => 'https://my-endpoint.tld/api/foo',
             'data' => [
                 'fields' => [
-                    'field_a' => 'value_a',
+                    'enabled' => true,
+                    'fields' => [
+                        'field_a' => ['data' => ['type' => 'constant', 'config' => [ 'constant' => [ 'value' => 'value_a' ] ]], 'modifiers' => []],
+                    ],
                 ],
             ],
             'cookies' => [
-                'cookie1',
-                'cookie2',
-                'cookie3',
-                'specialCookie.*',
+                'cookie1' => '{value}',
+                'cookie2' => '{value}',
+                'cookie3' => '{value}',
+                'specialCookie.*' => '{value}',
             ],
         ]);
 
@@ -167,6 +179,7 @@ class RequestRouteTest extends TestCase
         $submission = $this->getSubmission();
         $this->subject = new RequestRoute('request', $this->registry, $submission, 0);
         $this->subject->setLogger($this->logger);
+        $this->subject->setDataProcessor($this->registry->getDataProcessor());
         
         // process context
         $this->subject->addContext($this->context);
@@ -204,14 +217,17 @@ class RequestRouteTest extends TestCase
             'url' => 'https://my-endpoint.tld/api/foo',
             'data' => [
                 'fields' => [
-                    'field_a' => 'value_a',
+                    'enabled' => true,
+                    'fields' => [
+                        'field_a' => ['data' => ['type' => 'constant', 'config' => [ 'constant' => [ 'value' => 'value_a' ] ]], 'modifiers' => []],
+                    ],
                 ],
             ],
             'cookies' => [
-                'cookie1' => '__PASSTHROUGH',
+                'cookie1' => '{value}',
                 'cookie2' => 'value2b',
-                'cookie3' => '__PASSTHROUGH',
-                'specialCookie.*' => '__PASSTHROUGH',
+                'cookie3' => '{value}',
+                'specialCookie.*' => '{value}',
             ],
         ]);
 
@@ -230,6 +246,7 @@ class RequestRouteTest extends TestCase
         $submission = $this->getSubmission();
         $this->subject = new RequestRoute('request', $this->registry, $submission, 0);
         $this->subject->setLogger($this->logger);
+        $this->subject->setDataProcessor($this->registry->getDataProcessor());
         
         // process context
         $this->subject->addContext($this->context);
@@ -256,83 +273,6 @@ class RequestRouteTest extends TestCase
         $this->subject->process();
     }
 
-    /** @test */
-    public function useContentResolverAsCookieValue(): void
-    {
-        $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
-
-        $this->submissionData['field_a'] = 'value_a';
-
-        $this->addRouteConfiguration('request', [
-            'enabled' => true,
-            'url' => 'https://my-endpoint.tld/api/foo',
-            'data' => [
-                'fields' => [
-                    'field_a' => ['field' => 'field_a'],
-                ],
-            ],
-            'cookies' => [
-                'cookie1' => [
-                    'field' => 'field_a',
-                ],
-                'cookie2' => [
-                    'if' => [
-                        'field_a' => 'value_a',
-                        'then' => '__PASSTHROUGH',
-                    ],
-                ],
-                'cookie3' => [
-                    'if' => [
-                        'field_a' => 'value_b',
-                        'then' => '__PASSTHROUGH',
-                    ],
-                ],
-                'cookie4' => [
-                    'if' => [
-                        'field_a' => 'value_b',
-                        'else' => 'value_c',
-                    ],
-                ],
-            ],
-        ]);
-
-        $this->configureRequest(
-            '', 
-            [
-                'cookie1' => 'value1',
-                'cookie2' => 'value2',
-                'cookie3' => 'value3',
-                'cookie4' => 'value4',
-            ], 
-            []
-        );
-
-        $submission = $this->getSubmission();
-        $this->subject = new RequestRoute('request', $this->registry, $submission, 0);
-        $this->subject->setLogger($this->logger);
-        
-        // process context
-        $this->subject->addContext($this->context);
-        $this->assertEquals(
-            [
-                'cookie2' => 'value2',
-            ],
-            $submission->getContext()->getCookies()
-        );
-        $this->assertEmpty($submission->getContext()->getRequestVariables());
-
-        // process job
-        $dataDispatcherSpy->expects($this->once())->method('setUrl')->with('https://my-endpoint.tld/api/foo');
-        $dataDispatcherSpy->expects($this->once())->method('addCookies')->with([
-            'cookie1' => 'value_a',
-            'cookie2' => 'value2',
-            'cookie4' => 'value_c',
-        ]);
-        $dataDispatcherSpy->expects($this->once())->method('addHeaders')->with([]);
-        $dataDispatcherSpy->expects($this->once())->method('send')->with(['field_a' => 'value_a']);
-        $this->subject->process();
-    }
-
     // header functionality
 
     /** @test */
@@ -345,13 +285,16 @@ class RequestRouteTest extends TestCase
             'url' => 'https://my-endpoint.tld/api/foo',
             'data' => [
                 'fields' => [
-                    'field_a' => 'value_a',
+                    'enabled' => true,
+                    'fields' => [
+                        'field_a' => ['data' => ['type' => 'constant', 'config' => [ 'constant' => [ 'value' => 'value_a' ] ]], 'modifiers' => []],
+                    ],
                 ],
             ],
             'headers' => [
-                'header1',
-                'header2',
-                'header3',
+                'header1' => '{value}',
+                'header2' => '{value}',
+                'header3' => '{value}',
             ],
         ]);
 
@@ -367,6 +310,7 @@ class RequestRouteTest extends TestCase
 
         $submission = $this->getSubmission();
         $this->subject = new RequestRoute('request', $this->registry, $submission, 0);
+        $this->subject->setDataProcessor($this->registry->getDataProcessor());
         
         // process context
         $this->subject->addContext($this->context);
@@ -405,9 +349,9 @@ class RequestRouteTest extends TestCase
                 ],
             ],
             'headers' => [
-                'header1' => '__PASSTHROUGH',
+                'header1' => '{value}',
                 'header2' => 'value2b',
-                'header3' => '__PASSTHROUGH',
+                'header3' => '{value}',
             ],
         ]);
 
@@ -424,6 +368,7 @@ class RequestRouteTest extends TestCase
         $submission = $this->getSubmission();
         $this->subject = new RequestRoute('request', $this->registry, $submission, 0);
         $this->subject->setLogger($this->logger);
+        $this->subject->setDataProcessor($this->registry->getDataProcessor());
         
         // process context
         $this->subject->addContext($this->context);
@@ -447,83 +392,6 @@ class RequestRouteTest extends TestCase
     }
 
     /** @test */
-    public function useContentResolverAsHeaderValue()
-    {
-        $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
-
-        $this->submissionData['field_a'] = 'value_a';
-
-        $this->addRouteConfiguration('request', [
-            'enabled' => true,
-            'url' => 'https://my-endpoint.tld/api/foo',
-            'data' => [
-                'fields' => [
-                    'field_a' => ['field' => 'field_a'],
-                ],
-            ],
-            'headers' => [
-                'header1' => [
-                    'field' => 'field_a',
-                ],
-                'header2' => [
-                    'if' => [
-                        'field_a' => 'value_a',
-                        'then' => '__PASSTHROUGH',
-                    ],
-                ],
-                'header3' => [
-                    'if' => [
-                        'field_a' => 'value_b',
-                        'then' => '__PASSTHROUGH',
-                    ],
-                ],
-                'header4' => [
-                    'if' => [
-                        'field_a' => 'value_b',
-                        'else' => 'value_c',
-                    ],
-                ],
-            ],
-        ]);
-
-        $this->configureRequest(
-            '', 
-            [], 
-            [
-                'header1' => 'value1',
-                'header2' => 'value2',
-                'header3' => 'value3',
-                'header4' => 'value4',
-            ]
-        );
-
-        $submission = $this->getSubmission();
-        $this->subject = new RequestRoute('request', $this->registry, $submission, 0);
-        $this->subject->setLogger($this->logger);
-        
-        // process context
-        $this->subject->addContext($this->context);
-        $this->assertEmpty($submission->getContext()->getCookies());
-        $this->assertEquals(
-            [
-                'header2' => 'value2',
-            ],
-            $submission->getContext()->getRequestVariables()
-        );
-
-        // process job
-        $dataDispatcherSpy->expects($this->once())->method('setUrl')->with('https://my-endpoint.tld/api/foo');
-        $dataDispatcherSpy->expects($this->once())->method('addCookies')->with([]);
-        $dataDispatcherSpy->expects($this->once())->method('addHeaders')->with([
-            'header1' => 'value_a',
-            'header2' => 'value2',
-            'header4' => 'value_c',
-        ]);
-        $dataDispatcherSpy->expects($this->once())->method('send')->with(['field_a' => 'value_a']);
-        $this->subject->process();
-    }
-
-    /** @test */
     public function useInternalHeaderNames()
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
@@ -536,12 +404,16 @@ class RequestRouteTest extends TestCase
             'data' => [
                 'fields' => [
                     'field_a' => ['field' => 'field_a'],
+                    'enabled' => true,
+                    'fields' => [
+                        'field_a' => ['data' => ['type' => 'field', 'config' => [ 'field' => [ 'fieldName' => 'field_a' ] ]], 'modifiers' => []],
+                    ],
                 ],
             ],
             'headers' => [
-                'Custom-Header',
-                'User-Agent',
-                'Content-Type',
+                'Custom-Header' => '{value}',
+                'User-Agent' => '{value}',
+                'Content-Type' => '{value}',
             ],
         ]);
 
@@ -558,6 +430,7 @@ class RequestRouteTest extends TestCase
         $submission = $this->getSubmission();
         $this->subject = new RequestRoute('request', $this->registry, $submission, 0);
         $this->subject->setLogger($this->logger);
+        $this->subject->setDataProcessor($this->registry->getDataProcessor());
         
         // process context
         $this->subject->addContext($this->context);

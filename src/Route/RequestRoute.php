@@ -3,7 +3,8 @@
 namespace DigitalMarketingFramework\Distributor\Request\Route;
 
 use DigitalMarketingFramework\Core\Context\ContextInterface;
-use DigitalMarketingFramework\Core\Service\DataProcessorInterface;
+use DigitalMarketingFramework\Core\DataProcessor\DataMapper\FieldsDataMapper;
+use DigitalMarketingFramework\Core\DataProcessor\DataProcessor;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcherInterface;
 use DigitalMarketingFramework\Distributor\Core\Route\Route;
 use DigitalMarketingFramework\Distributor\Request\DataDispatcher\RequestDataDispatcherInterface;
@@ -14,24 +15,17 @@ class RequestRoute extends Route
     protected const KEY_URL = 'url';
     protected const DEFAULT_URL = '';
 
-    protected const KEYWORD_PASSTHROUGH = '__PASSTHROUGH';
-    protected const KEYWORD_UNSET = '__UNSET';
+    protected const KEYWORD_PASSTHROUGH = '{value}';
+    protected const KEYWORD_UNSET = '{null}';
 
     /*
      * example cookie configurations
      * 
-     * # just pass through the cookies that match one of the listed cookie name patterns
-     * cookies:
-     *     - cookieName1
-     *     - cookieName2
-     *     - cookieNameRegexpPattern3
-     * 
-     * # advanced cookie configuration
      * cookies:
      *     cookieName1: constantCookieValue1
-     *     cookieName2: __PASSTHROUGH
-     *     cookieNameRegexpPattern3: __PASSTHROUGH
-     *     cookieName4: __UNSET
+     *     cookieName2: {value}
+     *     cookieNameRegexpPattern3: {value}
+     *     cookieName4: {null}
      */
     protected const KEY_COOKIES = 'cookies';
     protected const DEFAULT_COOKIES = [];
@@ -39,31 +33,14 @@ class RequestRoute extends Route
     /*
      * example header configurations
      * 
-     * # just pass through the listed headers
      * headers:
-     *     - User-Agent
-     *     - Accept
-     * 
-     * # advanced header configuration
-     * headers:
-     *     User-Agent: __PASSTHROUGH
+     *     User-Agent: {value}
      *     Accept: application/json
-     *     Content-Type: __UNSET
+     *     Content-Type: {null}
      */
     protected const KEY_HEADERS = 'headers';
     protected const DEFAULT_HEADERS = [];
-
-    protected const KEY_FIELDS = DataProcessorInterface::KEY_FIELDS;
-    protected const DEFAULT_FIELDS = DataProcessorInterface::DEFAULT_FIELDS;
     
-    protected function getUrl(): string
-    {
-        $url = $this->getConfig(static::KEY_URL);
-        if ($url) {
-            $url = $this->resolveContent($url);
-        }
-        return $url ? $url : '';
-    }
 
     protected function getSubmissionCookies(ContextInterface $context): array
     {
@@ -71,11 +48,6 @@ class RequestRoute extends Route
         $cookieConfig = $this->getConfig(static::KEY_COOKIES);
         $cookieNamePatterns = [];
         foreach ($cookieConfig as $cookieName => $cookieValue) {
-            if (is_numeric($cookieName)) {
-                $cookieName = $cookieValue;
-                $cookieValue = static::KEYWORD_PASSTHROUGH;
-            }
-            $cookieValue = $this->resolveContent($cookieValue);
             if ($cookieValue === static::KEYWORD_PASSTHROUGH) {
                 $cookieNamePatterns[] = $cookieName;
             }
@@ -95,14 +67,6 @@ class RequestRoute extends Route
         $cookies = [];
         $cookieConfig = $this->getConfig(static::KEY_COOKIES);
         foreach ($cookieConfig as $cookieName => $cookieValue) {
-            if (is_numeric($cookieName)) {
-                $cookieName = $cookieValue;
-                $cookieValue = static::KEYWORD_PASSTHROUGH;
-            }
-            $cookieValue = $this->resolveContent($cookieValue);
-            if ($cookieValue === null) {
-                continue;
-            }
             switch ($cookieValue) {
                 case static::KEYWORD_PASSTHROUGH:
                     $cookieNamePattern = '/^' .$cookieName . '$/';
@@ -144,13 +108,8 @@ class RequestRoute extends Route
     {
         $headers = [];
         $headerConfig = $this->getConfig(static::KEY_HEADERS);
-        foreach ($headerConfig as $headerName => $headerValue) {
-            if (is_numeric($headerName)) {
-                $headerName = $headerValue;
-                $headerValue = static::KEYWORD_PASSTHROUGH;
-            }
-            $headerValue = $this->resolveContent($headerValue);
-            if ($headerValue === static::KEYWORD_PASSTHROUGH) {
+        foreach ($headerConfig as $headerName => $headerValuePattern) {
+            if ($headerValuePattern === static::KEYWORD_PASSTHROUGH) {
                 foreach ($this->getPotentialInternalHeaderNames($headerName) as $potentialHeaderName) {
                     $headerValue = $context->getRequestVariable($potentialHeaderName);
                     if ($headerValue) {
@@ -173,14 +132,6 @@ class RequestRoute extends Route
         $headers = [];
         $headerConfig = $this->getConfig(static::KEY_HEADERS);
         foreach ($headerConfig as $headerName => $headerValue) {
-            if (is_numeric($headerName)) {
-                $headerName = $headerValue;
-                $headerValue = static::KEYWORD_PASSTHROUGH;
-            }
-            $headerValue = $this->resolveContent($headerValue);
-            if ($headerValue === null) {
-                continue;
-            }
             switch ($headerValue) {
                 case static::KEYWORD_PASSTHROUGH:
                     $headerValue = null;
@@ -212,7 +163,7 @@ class RequestRoute extends Route
 
     protected function getDispatcher(): ?DataDispatcherInterface
     {
-        $url = $this->getUrl();
+        $url = $this->getConfig(static::KEY_URL);
         if (!$url) {
             $this->logger->error('No URL provided for request dispatcher');
             return null;
@@ -249,6 +200,11 @@ class RequestRoute extends Route
         }
     }
 
+    protected static function getDefaultFields(): array
+    {
+        return FieldsDataMapper::DEFAULT_FIELDS;
+    }
+
     public static function getDefaultConfiguration(): array
     {
         $config = [
@@ -258,7 +214,7 @@ class RequestRoute extends Route
                 static::KEY_HEADERS => static::DEFAULT_HEADERS,
             ]
             + parent::getDefaultConfiguration();
-        $config[static::KEY_DATA][static::KEY_FIELDS] = static::DEFAULT_FIELDS;
+        $config[DataProcessor::KEY_DATA][DataProcessor::KEY_CONFIG]['fields'][FieldsDataMapper::KEY_FIELDS] = static::getDefaultFields();
         return $config;
     }
 }
