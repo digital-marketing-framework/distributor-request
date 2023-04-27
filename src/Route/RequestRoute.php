@@ -2,6 +2,10 @@
 
 namespace DigitalMarketingFramework\Distributor\Request\Route;
 
+use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\ContainerSchema;
+use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\MapSchema;
+use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\SchemaInterface;
+use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\StringSchema;
 use DigitalMarketingFramework\Core\Context\ContextInterface;
 use DigitalMarketingFramework\Core\DataProcessor\DataMapper\FieldsDataMapper;
 use DigitalMarketingFramework\Core\DataProcessor\DataProcessor;
@@ -216,5 +220,15 @@ class RequestRoute extends Route
             + parent::getDefaultConfiguration();
         $config[DataProcessor::KEY_DATA][DataProcessor::KEY_CONFIG]['fields'][FieldsDataMapper::KEY_FIELDS] = static::getDefaultFields();
         return $config;
+    }
+
+    public static function getSchema(): SchemaInterface
+    {
+        /** @var ContainerSchema $schema */
+        $schema = parent::getSchema();
+        $schema->addProperty(static::KEY_URL, new StringSchema());
+        $schema->addProperty(static::KEY_COOKIES, new MapSchema(new StringSchema('{value}'), new StringSchema()));
+        $schema->addProperty(static::KEY_HEADERS, new MapSchema(new StringSchema('{value}'), new StringSchema()));
+        return $schema;
     }
 }
