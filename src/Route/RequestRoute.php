@@ -218,7 +218,8 @@ class RequestRoute extends Route
                 static::KEY_HEADERS => static::DEFAULT_HEADERS,
             ]
             + parent::getDefaultConfiguration();
-        $config[DataProcessor::KEY_DATA][DataProcessor::KEY_CONFIG]['fields'][FieldsDataMapper::KEY_FIELDS] = static::getDefaultFields();
+        $config[static::KEY_DATA] = DataProcessor::getDefaultDataMapperConfiguration('fields', FieldsDataMapper::class);
+        $config[static::KEY_DATA]['fields'][FieldsDataMapper::KEY_FIELDS] = static::getDefaultFields();
         return $config;
     }
 
