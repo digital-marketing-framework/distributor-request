@@ -4,11 +4,10 @@ namespace DigitalMarketingFramework\Distributor\Request\Route;
 
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\ContainerSchema;
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\MapSchema;
+use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\ScalarValues;
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\SchemaInterface;
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\StringSchema;
 use DigitalMarketingFramework\Core\Context\ContextInterface;
-use DigitalMarketingFramework\Core\DataProcessor\DataMapper\FieldsDataMapper;
-use DigitalMarketingFramework\Core\DataProcessor\DataProcessor;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcherInterface;
 use DigitalMarketingFramework\Distributor\Core\Route\Route;
 use DigitalMarketingFramework\Distributor\Request\DataDispatcher\RequestDataDispatcherInterface;
@@ -24,7 +23,7 @@ class RequestRoute extends Route
 
     /*
      * example cookie configurations
-     * 
+     *
      * cookies:
      *     cookieName1: constantCookieValue1
      *     cookieName2: {value}
@@ -36,7 +35,7 @@ class RequestRoute extends Route
 
     /*
      * example header configurations
-     * 
+     *
      * headers:
      *     User-Agent: {value}
      *     Accept: application/json
@@ -44,7 +43,7 @@ class RequestRoute extends Route
      */
     protected const KEY_HEADERS = 'headers';
     protected const DEFAULT_HEADERS = [];
-    
+
 
     protected function getSubmissionCookies(ContextInterface $context): array
     {
@@ -125,7 +124,7 @@ class RequestRoute extends Route
         }
         return $headers;
     }
-    
+
     /**
      * Headers to be sent with the upcoming http request
      * @param array $submissionHeaders
@@ -192,7 +191,7 @@ class RequestRoute extends Route
     public function addContext(ContextInterface $context): void
     {
         parent::addContext($context);
-        
+
         $cookies = $this->getSubmissionCookies($context);
         foreach ($cookies as $name => $value) {
             $this->submission->getContext()->setCookie($name, $value);
@@ -204,32 +203,31 @@ class RequestRoute extends Route
         }
     }
 
-    protected static function getDefaultFields(): array
-    {
-        return FieldsDataMapper::DEFAULT_FIELDS;
-    }
-
-    public static function getDefaultConfiguration(): array
-    {
-        $config = [
-                static::KEY_ENABLED => static::DEFAULT_ENABLED,
-                static::KEY_URL => static::DEFAULT_URL,
-                static::KEY_COOKIES => static::DEFAULT_COOKIES,
-                static::KEY_HEADERS => static::DEFAULT_HEADERS,
-            ]
-            + parent::getDefaultConfiguration();
-        $config[static::KEY_DATA] = DataProcessor::getDefaultDataMapperConfiguration('fields', FieldsDataMapper::class);
-        $config[static::KEY_DATA]['fields'][FieldsDataMapper::KEY_FIELDS] = static::getDefaultFields();
-        return $config;
-    }
-
     public static function getSchema(): SchemaInterface
     {
         /** @var ContainerSchema $schema */
         $schema = parent::getSchema();
         $schema->addProperty(static::KEY_URL, new StringSchema());
-        $schema->addProperty(static::KEY_COOKIES, new MapSchema(new StringSchema('{value}'), new StringSchema()));
-        $schema->addProperty(static::KEY_HEADERS, new MapSchema(new StringSchema('{value}'), new StringSchema()));
+        $schema->addProperty(
+            static::KEY_COOKIES,
+            new MapSchema(
+                new StringSchema(
+                    defaultValue:'{value}',
+                    suggestedValues: new ScalarValues([static::KEYWORD_PASSTHROUGH, static::KEYWORD_UNSET])
+                ),
+                new StringSchema()
+            )
+        );
+        $schema->addProperty(
+            static::KEY_HEADERS,
+            new MapSchema(
+                new StringSchema(
+                    defaultValue:'{value}',
+                    suggestedValues: new ScalarValues([static::KEYWORD_PASSTHROUGH, static::KEYWORD_UNSET])
+                ),
+                new StringSchema()
+            )
+        );
         return $schema;
     }
 }
