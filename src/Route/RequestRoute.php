@@ -4,10 +4,11 @@ namespace DigitalMarketingFramework\Distributor\Request\Route;
 
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\ContainerSchema;
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\MapSchema;
-use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\ScalarValues;
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\SchemaInterface;
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\StringSchema;
+use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Value\ScalarValues;
 use DigitalMarketingFramework\Core\Context\ContextInterface;
+use DigitalMarketingFramework\Core\Utility\GeneralUtility;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcherInterface;
 use DigitalMarketingFramework\Distributor\Core\Route\Route;
 use DigitalMarketingFramework\Distributor\Request\DataDispatcher\RequestDataDispatcherInterface;
@@ -213,9 +214,14 @@ class RequestRoute extends Route
             new MapSchema(
                 new StringSchema(
                     defaultValue:'{value}',
-                    suggestedValues: new ScalarValues([static::KEYWORD_PASSTHROUGH, static::KEYWORD_UNSET])
+                    suggestedValues: new ScalarValues([
+                        static::KEYWORD_PASSTHROUGH => GeneralUtility::getLabelFromValue(static::KEYWORD_PASSTHROUGH),
+                        static::KEYWORD_UNSET => GeneralUtility::getLabelFromValue(static::KEYWORD_UNSET),
+                    ])
                 ),
-                new StringSchema()
+                new StringSchema(
+                    defaultValue:'cookieName'
+                )
             )
         );
         $schema->addProperty(
@@ -223,9 +229,14 @@ class RequestRoute extends Route
             new MapSchema(
                 new StringSchema(
                     defaultValue:'{value}',
-                    suggestedValues: new ScalarValues([static::KEYWORD_PASSTHROUGH, static::KEYWORD_UNSET])
+                    suggestedValues: new ScalarValues([
+                        static::KEYWORD_PASSTHROUGH => GeneralUtility::getLabelFromValue(static::KEYWORD_PASSTHROUGH),
+                        static::KEYWORD_UNSET => GeneralUtility::getLabelFromValue(static::KEYWORD_UNSET),
+                    ])
                 ),
-                new StringSchema()
+                new StringSchema(
+                    defaultValue:'headerName'
+                )
             )
         );
         return $schema;
