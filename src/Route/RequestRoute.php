@@ -209,36 +209,36 @@ class RequestRoute extends Route
         /** @var ContainerSchema $schema */
         $schema = parent::getSchema();
         $schema->addProperty(static::KEY_URL, new StringSchema());
-        $schema->addProperty(
-            static::KEY_COOKIES,
-            new MapSchema(
-                new StringSchema(
-                    defaultValue:'{value}',
-                    suggestedValues: new ScalarValues([
-                        static::KEYWORD_PASSTHROUGH => GeneralUtility::getLabelFromValue(static::KEYWORD_PASSTHROUGH),
-                        static::KEYWORD_UNSET => GeneralUtility::getLabelFromValue(static::KEYWORD_UNSET),
-                    ])
-                ),
-                new StringSchema(
-                    defaultValue:'cookieName'
-                )
+
+        $cookiesSchema = new MapSchema(
+            new StringSchema(
+                defaultValue:'{value}',
+                suggestedValues: new ScalarValues([
+                    static::KEYWORD_PASSTHROUGH => GeneralUtility::getLabelFromValue(static::KEYWORD_PASSTHROUGH),
+                    static::KEYWORD_UNSET => GeneralUtility::getLabelFromValue(static::KEYWORD_UNSET),
+                ])
+            ),
+            new StringSchema(
+                defaultValue:'cookieName'
             )
         );
-        $schema->addProperty(
-            static::KEY_HEADERS,
-            new MapSchema(
-                new StringSchema(
-                    defaultValue:'{value}',
-                    suggestedValues: new ScalarValues([
-                        static::KEYWORD_PASSTHROUGH => GeneralUtility::getLabelFromValue(static::KEYWORD_PASSTHROUGH),
-                        static::KEYWORD_UNSET => GeneralUtility::getLabelFromValue(static::KEYWORD_UNSET),
-                    ])
-                ),
-                new StringSchema(
-                    defaultValue:'headerName'
-                )
+        $cookiesSchema->getRenderingDefinition()->setNavigationItem(false);
+        $schema->addProperty(static::KEY_COOKIES, $cookiesSchema);
+
+        $headersSchema = new MapSchema(
+            new StringSchema(
+                defaultValue:'{value}',
+                suggestedValues: new ScalarValues([
+                    static::KEYWORD_PASSTHROUGH => GeneralUtility::getLabelFromValue(static::KEYWORD_PASSTHROUGH),
+                    static::KEYWORD_UNSET => GeneralUtility::getLabelFromValue(static::KEYWORD_UNSET),
+                ])
+            ),
+            new StringSchema(
+                defaultValue:'headerName'
             )
         );
+        $headersSchema->getRenderingDefinition()->setNavigationItem(false);
+        $schema->addProperty(static::KEY_HEADERS, $headersSchema);
         return $schema;
     }
 }
