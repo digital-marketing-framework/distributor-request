@@ -8,6 +8,7 @@ use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\S
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\StringSchema;
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Value\ScalarValues;
 use DigitalMarketingFramework\Core\Context\ContextInterface;
+use DigitalMarketingFramework\Core\Exception\DigitalMarketingFrameworkException;
 use DigitalMarketingFramework\Core\Utility\GeneralUtility;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcherInterface;
 use DigitalMarketingFramework\Distributor\Core\Route\Route;
@@ -165,12 +166,11 @@ class RequestRoute extends Route
         return 'request';
     }
 
-    protected function getDispatcher(): ?DataDispatcherInterface
+    protected function getDispatcher(): DataDispatcherInterface
     {
         $url = $this->getConfig(static::KEY_URL);
         if (!$url) {
-            $this->logger->error('No URL provided for request dispatcher');
-            return null;
+            throw new DigitalMarketingFrameworkException('No URL found for request dispatcher');
         }
 
         $cookies = $this->getCookies($this->submission->getContext()->getCookies());
@@ -184,8 +184,7 @@ class RequestRoute extends Route
             $dispatcher->addHeaders($headers);
             return $dispatcher;
         } catch (InvalidUrlException $e) {
-            $this->logger->error($e->getMessage());
-            return null;
+            throw new DigitalMarketingFrameworkException($e->getMessage());
         }
     }
 
@@ -220,7 +219,8 @@ class RequestRoute extends Route
             ),
             new StringSchema(
                 defaultValue:'cookieName'
-            )
+            ),
+            static::DEFAULT_COOKIES
         );
         $cookiesSchema->getRenderingDefinition()->setNavigationItem(false);
         $schema->addProperty(static::KEY_COOKIES, $cookiesSchema);
@@ -235,7 +235,8 @@ class RequestRoute extends Route
             ),
             new StringSchema(
                 defaultValue:'headerName'
-            )
+            ),
+            static::DEFAULT_HEADERS
         );
         $headersSchema->getRenderingDefinition()->setNavigationItem(false);
         $schema->addProperty(static::KEY_HEADERS, $headersSchema);
