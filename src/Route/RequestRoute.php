@@ -209,37 +209,30 @@ class RequestRoute extends Route
         $schema = parent::getSchema();
         $schema->addProperty(static::KEY_URL, new StringSchema());
 
+        $cookieValueSchema = new StringSchema(static::KEYWORD_PASSTHROUGH);
+        $cookieValueSchema->getSuggestedValues()->addValue(static::KEYWORD_PASSTHROUGH);
+        $cookieValueSchema->getSuggestedValues()->addValue(static::KEYWORD_UNSET);
+        $cookieNameSchema = new StringSchema('cookieName');
         $cookiesSchema = new MapSchema(
-            new StringSchema(
-                defaultValue:'{value}',
-                suggestedValues: new ScalarValues([
-                    static::KEYWORD_PASSTHROUGH => GeneralUtility::getLabelFromValue(static::KEYWORD_PASSTHROUGH),
-                    static::KEYWORD_UNSET => GeneralUtility::getLabelFromValue(static::KEYWORD_UNSET),
-                ])
-            ),
-            new StringSchema(
-                defaultValue:'cookieName'
-            ),
+            $cookieValueSchema,
+            $cookieNameSchema,
             static::DEFAULT_COOKIES
         );
         $cookiesSchema->getRenderingDefinition()->setNavigationItem(false);
         $schema->addProperty(static::KEY_COOKIES, $cookiesSchema);
 
+        $headerValueSchema = new StringSchema(static::KEYWORD_PASSTHROUGH);
+        $headerValueSchema->getSuggestedValues()->addValue(static::KEYWORD_PASSTHROUGH);
+        $headerValueSchema->getSuggestedValues()->addValue(static::KEYWORD_UNSET);
+        $headerNameSchema = new StringSchema('headerName');
         $headersSchema = new MapSchema(
-            new StringSchema(
-                defaultValue:'{value}',
-                suggestedValues: new ScalarValues([
-                    static::KEYWORD_PASSTHROUGH => GeneralUtility::getLabelFromValue(static::KEYWORD_PASSTHROUGH),
-                    static::KEYWORD_UNSET => GeneralUtility::getLabelFromValue(static::KEYWORD_UNSET),
-                ])
-            ),
-            new StringSchema(
-                defaultValue:'headerName'
-            ),
+            $headerValueSchema,
+            $headerNameSchema,
             static::DEFAULT_HEADERS
         );
         $headersSchema->getRenderingDefinition()->setNavigationItem(false);
         $schema->addProperty(static::KEY_HEADERS, $headersSchema);
+
         return $schema;
     }
 }
