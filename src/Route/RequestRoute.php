@@ -6,10 +6,8 @@ use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\C
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\MapSchema;
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\SchemaInterface;
 use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\StringSchema;
-use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Value\ScalarValues;
 use DigitalMarketingFramework\Core\Context\ContextInterface;
 use DigitalMarketingFramework\Core\Exception\DigitalMarketingFrameworkException;
-use DigitalMarketingFramework\Core\Utility\GeneralUtility;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcherInterface;
 use DigitalMarketingFramework\Distributor\Core\Route\Route;
 use DigitalMarketingFramework\Distributor\Request\DataDispatcher\RequestDataDispatcherInterface;
