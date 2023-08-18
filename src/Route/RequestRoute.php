@@ -44,11 +44,10 @@ class RequestRoute extends Route
     protected const KEY_HEADERS = 'headers';
     protected const DEFAULT_HEADERS = [];
 
-
     protected function getSubmissionCookies(ContextInterface $context): array
     {
         $cookies = [];
-        $cookieConfig = $this->getConfig(static::KEY_COOKIES);
+        $cookieConfig = $this->getMapConfig(static::KEY_COOKIES);
         $cookieNamePatterns = [];
         foreach ($cookieConfig as $cookieName => $cookieValue) {
             if ($cookieValue === static::KEYWORD_PASSTHROUGH) {
@@ -68,7 +67,7 @@ class RequestRoute extends Route
     protected function getCookies(array $submissionCookies): array
     {
         $cookies = [];
-        $cookieConfig = $this->getConfig(static::KEY_COOKIES);
+        $cookieConfig = $this->getMapConfig(static::KEY_COOKIES);
         foreach ($cookieConfig as $cookieName => $cookieValue) {
             switch ($cookieValue) {
                 case static::KEYWORD_PASSTHROUGH:
@@ -110,7 +109,7 @@ class RequestRoute extends Route
     protected function getSubmissionHeaders(ContextInterface $context): array
     {
         $headers = [];
-        $headerConfig = $this->getConfig(static::KEY_HEADERS);
+        $headerConfig = $this->getMapConfig(static::KEY_HEADERS);
         foreach ($headerConfig as $headerName => $headerValuePattern) {
             if ($headerValuePattern === static::KEYWORD_PASSTHROUGH) {
                 foreach ($this->getPotentialInternalHeaderNames($headerName) as $potentialHeaderName) {
@@ -133,7 +132,7 @@ class RequestRoute extends Route
     protected function getHeaders(array $submissionHeaders): array
     {
         $headers = [];
-        $headerConfig = $this->getConfig(static::KEY_HEADERS);
+        $headerConfig = $this->getMapConfig(static::KEY_HEADERS);
         foreach ($headerConfig as $headerName => $headerValue) {
             switch ($headerValue) {
                 case static::KEYWORD_PASSTHROUGH:
@@ -205,12 +204,18 @@ class RequestRoute extends Route
     {
         /** @var ContainerSchema $schema */
         $schema = parent::getSchema();
-        $schema->addProperty(static::KEY_URL, new StringSchema());
+
+        $urlSchema = new StringSchema();
+        $urlSchema->getRenderingDefinition()->setLabel('URL');
+        $urlProperty = $schema->addProperty(static::KEY_URL, $urlSchema);
+        $urlProperty->setWeight(50);
 
         $cookieValueSchema = new StringSchema(static::KEYWORD_PASSTHROUGH);
         $cookieValueSchema->getSuggestedValues()->addValue(static::KEYWORD_PASSTHROUGH);
         $cookieValueSchema->getSuggestedValues()->addValue(static::KEYWORD_UNSET);
+        $cookieValueSchema->getRenderingDefinition()->setLabel('Cookie Value');
         $cookieNameSchema = new StringSchema('cookieName');
+        $cookieNameSchema->getRenderingDefinition()->setLabel('Cookie Name/Pattern');
         $cookiesSchema = new MapSchema(
             $cookieValueSchema,
             $cookieNameSchema,
@@ -222,7 +227,9 @@ class RequestRoute extends Route
         $headerValueSchema = new StringSchema(static::KEYWORD_PASSTHROUGH);
         $headerValueSchema->getSuggestedValues()->addValue(static::KEYWORD_PASSTHROUGH);
         $headerValueSchema->getSuggestedValues()->addValue(static::KEYWORD_UNSET);
+        $headerValueSchema->getRenderingDefinition()->setLabel('Header Value');
         $headerNameSchema = new StringSchema('headerName');
+        $headerNameSchema->getRenderingDefinition()->setLabel('Header Name/Pattern');
         $headersSchema = new MapSchema(
             $headerValueSchema,
             $headerNameSchema,
