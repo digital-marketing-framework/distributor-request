@@ -207,6 +207,7 @@ class RequestRoute extends Route
 
         $urlSchema = new StringSchema();
         $urlSchema->getRenderingDefinition()->setLabel('URL');
+        $urlSchema->setRequired();
         $urlProperty = $schema->addProperty(static::KEY_URL, $urlSchema);
         $urlProperty->setWeight(50);
 
