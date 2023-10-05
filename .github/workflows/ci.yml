@@ -1,18 +1,17 @@
-name: PHP Composer
+name: Code Check
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build:
-
+  code-quality:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: ['8.1']
+        php-versions: ['8.1', '8.2']
 
     steps:
       - uses: actions/checkout@v2
@@ -38,5 +37,8 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Run tests
-        run: composer run-script testdox
+      - name: Static Code Checks
+        run: composer run-script ci:static
+
+      - name: Dynamic Code Checks
+        run: composer run-script ci:dynamic
