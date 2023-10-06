@@ -19,7 +19,7 @@ class SpiedOnRequestDataDispatcher extends RequestDataDispatcher implements Requ
     {
         $this->spy->send($data);
     }
-    
+
     public function setUrl(string $url): void
     {
         $this->spy->setUrl($url);

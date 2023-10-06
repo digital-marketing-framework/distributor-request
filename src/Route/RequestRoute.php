@@ -16,12 +16,14 @@ use DigitalMarketingFramework\Distributor\Request\Exception\InvalidUrlException;
 class RequestRoute extends Route
 {
     protected const KEY_URL = 'url';
+
     protected const DEFAULT_URL = '';
 
     protected const KEYWORD_PASSTHROUGH = '{value}';
+
     protected const KEYWORD_UNSET = '{null}';
 
-    /*
+    /**
      * example cookie configurations
      *
      * cookies:
@@ -31,9 +33,10 @@ class RequestRoute extends Route
      *     cookieName4: {null}
      */
     protected const KEY_COOKIES = 'cookies';
+
     protected const DEFAULT_COOKIES = [];
 
-    /*
+    /**
      * example header configurations
      *
      * headers:
@@ -42,8 +45,12 @@ class RequestRoute extends Route
      *     Content-Type: {null}
      */
     protected const KEY_HEADERS = 'headers';
+
     protected const DEFAULT_HEADERS = [];
 
+    /**
+     * @return array<string,string>
+     */
     protected function getSubmissionCookies(ContextInterface $context): array
     {
         $cookies = [];
@@ -54,6 +61,7 @@ class RequestRoute extends Route
                 $cookieNamePatterns[] = $cookieName;
             }
         }
+
         foreach ($context->getCookies() as $cookieName => $cookieValue) {
             foreach ($cookieNamePatterns as $cookieNamePattern) {
                 if (preg_match('/^' . $cookieNamePattern . '$/', $cookieName)) {
@@ -61,9 +69,15 @@ class RequestRoute extends Route
                 }
             }
         }
+
         return $cookies;
     }
 
+    /**
+     * @param array<string,string> $submissionCookies
+     *
+     * @return array<string,?string>
+     */
     protected function getCookies(array $submissionCookies): array
     {
         $cookies = [];
@@ -71,12 +85,13 @@ class RequestRoute extends Route
         foreach ($cookieConfig as $cookieName => $cookieValue) {
             switch ($cookieValue) {
                 case static::KEYWORD_PASSTHROUGH:
-                    $cookieNamePattern = '/^' .$cookieName . '$/';
+                    $cookieNamePattern = '/^' . $cookieName . '$/';
                     foreach ($submissionCookies as $submissionCookieName => $submissionCookieValue) {
                         if (preg_match($cookieNamePattern, $submissionCookieName)) {
                             $cookies[$submissionCookieName] = $submissionCookieValue;
                         }
                     }
+
                     break;
                 case static::KEYWORD_UNSET:
                     $cookies[$cookieName] = null;
@@ -86,16 +101,21 @@ class RequestRoute extends Route
                     break;
             }
         }
+
         return $cookies;
     }
 
+    /**
+     * @return array<string>
+     */
     protected function getPotentialInternalHeaderNames(string $headerName): array
     {
         // example: 'User-Agent' => ['User-Agent', 'HTTP_USER_AGENT', 'USER_AGENT']
-        $name = preg_replace_callback('/-([A-Z])/', function(array $matches) {
+        $name = preg_replace_callback('/-([A-Z])/', static function (array $matches) {
             return '_' . $matches[1];
         }, $headerName);
         $name = strtoupper($name);
+
         return [
             $headerName,
             'HTTP_' . $name,
@@ -105,6 +125,8 @@ class RequestRoute extends Route
 
     /**
      * Headers to be passed from the submission request (during context processing)
+     *
+     * @return array<string,string>
      */
     protected function getSubmissionHeaders(ContextInterface $context): array
     {
@@ -121,13 +143,16 @@ class RequestRoute extends Route
                 }
             }
         }
+
         return $headers;
     }
 
     /**
      * Headers to be sent with the upcoming http request
-     * @param array $submissionHeaders
-     * @return array
+     *
+     * @param array<string,string> $submissionHeaders
+     *
+     * @return array<string,?string>
      */
     protected function getHeaders(array $submissionHeaders): array
     {
@@ -143,9 +168,11 @@ class RequestRoute extends Route
                             break;
                         }
                     }
+
                     if ($headerValue !== null) {
                         $headers[$headerName] = $headerValue;
                     }
+
                     break;
                 case static::KEYWORD_UNSET:
                     $headers[$headerName] = null;
@@ -155,6 +182,7 @@ class RequestRoute extends Route
                     break;
             }
         }
+
         return $headers;
     }
 
@@ -179,6 +207,7 @@ class RequestRoute extends Route
             $dispatcher->setUrl($url);
             $dispatcher->addCookies($cookies);
             $dispatcher->addHeaders($headers);
+
             return $dispatcher;
         } catch (InvalidUrlException $e) {
             throw new DigitalMarketingFrameworkException($e->getMessage());
