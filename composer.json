@@ -1,6 +1,6 @@
 {
     "name": "digital-marketing-framework/distributor-request",
-    "description": "FormRelay route and dispatcher for (http) requests.",
+    "description": "DMF distributor route and dispatcher for (http) requests.",
     "license": "GPL-2.0-or-later",
     "type": "library",
     "keywords": [
@@ -9,6 +9,7 @@
         "data",
         "submission",
         "relay",
+        "distribution",
         "request"
     ],
     "authors": [
