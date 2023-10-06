@@ -4,6 +4,7 @@ namespace DigitalMarketingFramework\Distributor\Request\Tests\Integration\Route;
 
 use DigitalMarketingFramework\Core\Exception\DigitalMarketingFrameworkException;
 use DigitalMarketingFramework\Core\Registry\RegistryDomain;
+use DigitalMarketingFramework\Distributor\Core\Model\DataSet\SubmissionDataSetInterface;
 use DigitalMarketingFramework\Distributor\Core\Tests\Integration\DistributorRegistryTestTrait;
 use DigitalMarketingFramework\Distributor\Core\Tests\Integration\SubmissionTestTrait;
 use DigitalMarketingFramework\Distributor\Request\DistributorRequestInitialization;
@@ -43,9 +44,14 @@ class RequestRouteTest extends TestCase
         /** @var RequestDataDispatcherSpyInterface&MockObject $spy */
         $spy = $this->createMock(RequestDataDispatcherSpyInterface::class);
         $this->registry->registerDataDispatcher(SpiedOnRequestDataDispatcher::class, [$spy], 'request');
+
         return $spy;
     }
 
+    /**
+     * @param array<string,string> $cookies
+     * @param array<string,string> $headers
+     */
     protected function configureRequest(string $ipAddress, array $cookies = [], array $headers = []): void
     {
         $this->context->expects($this->any())
@@ -60,9 +66,18 @@ class RequestRouteTest extends TestCase
         foreach ($headers as $name => $value) {
             $requestVariableMap[] = [$name, $value];
         }
+
         $this->context->expects($this->any())
             ->method('getRequestVariable')
             ->willReturnMap($requestVariableMap);
+    }
+
+    protected function getRoute(SubmissionDataSetInterface $submission, string $routeId): RequestRoute
+    {
+        $route = $this->registry->getRoute($submission, $routeId);
+        $this->assertInstanceOf(RequestRoute::class, $route);
+
+        return $route;
     }
 
     /** @test */
@@ -77,15 +92,15 @@ class RequestRouteTest extends TestCase
                 'fieldMap' => [
                     'enabled' => true,
                     'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => [ 'constant' => [ 'value' => 'value_a' ] ]], 'modifiers' => []], 'fieldId1', 10),
-                    ]
+                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
+                    ],
                 ],
             ],
         ]);
 
         $this->configureRequest('', [], []);
         $submission = $this->getSubmission();
-        $this->subject = $this->registry->getRoute($submission, 'routeId1');
+        $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
         $this->subject->addContext($this->context);
@@ -113,8 +128,8 @@ class RequestRouteTest extends TestCase
                 'fields' => [
                     'enabled' => true,
                     'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => [ 'constant' => [ 'value' => 'value_a' ] ]], 'modifiers' => []], 'fieldId1', 10),
-                    ]
+                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
+                    ],
                 ],
             ],
         ]);
@@ -122,7 +137,7 @@ class RequestRouteTest extends TestCase
         $this->configureRequest('', [], []);
         $submission = $this->getSubmission();
 
-        $this->subject = $this->registry->getRoute($submission, 'routeId1');
+        $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
         $this->subject->addContext($this->context);
@@ -148,7 +163,7 @@ class RequestRouteTest extends TestCase
                 'fieldMap' => [
                     'enabled' => true,
                     'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => [ 'constant' => [ 'value' => 'value_a' ] ]], 'modifiers' => []], 'fieldId1', 10),
+                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
                     ],
                 ],
             ],
@@ -173,7 +188,7 @@ class RequestRouteTest extends TestCase
         );
 
         $submission = $this->getSubmission();
-        $this->subject = $this->registry->getRoute($submission, 'routeId1');
+        $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
         $this->subject->addContext($this->context);
@@ -213,7 +228,7 @@ class RequestRouteTest extends TestCase
                 'fieldMap' => [
                     'enabled' => true,
                     'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => [ 'constant' => [ 'value' => 'value_a' ] ]], 'modifiers' => []], 'fieldId1', 10),
+                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
                     ],
                 ],
             ],
@@ -238,7 +253,7 @@ class RequestRouteTest extends TestCase
         );
 
         $submission = $this->getSubmission();
-        $this->subject = $this->registry->getRoute($submission, 'routeId1');
+        $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
         $this->subject->addContext($this->context);
@@ -268,7 +283,7 @@ class RequestRouteTest extends TestCase
     // header functionality
 
     /** @test */
-    public function passThroughHeadersAsPlainList()
+    public function passThroughHeadersAsPlainList(): void
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
 
@@ -279,7 +294,7 @@ class RequestRouteTest extends TestCase
                 'fieldMap' => [
                     'enabled' => true,
                     'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => [ 'constant' => [ 'value' => 'value_a' ] ]], 'modifiers' => []], 'fieldId1', 10),
+                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
                     ],
                 ],
             ],
@@ -301,7 +316,7 @@ class RequestRouteTest extends TestCase
         );
 
         $submission = $this->getSubmission();
-        $this->subject = $this->registry->getRoute($submission, 'routeId1');
+        $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
         $this->subject->addContext($this->context);
@@ -327,7 +342,7 @@ class RequestRouteTest extends TestCase
     }
 
     /** @test */
-    public function defineHeadersWithAssocList()
+    public function defineHeadersWithAssocList(): void
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
 
@@ -338,7 +353,7 @@ class RequestRouteTest extends TestCase
                 'fieldMap' => [
                     'enabled' => true,
                     'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => [ 'constant' => [ 'value' => 'value_a' ] ]], 'modifiers' => []], 'fieldId1', 10),
+                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
                     ],
                 ],
             ],
@@ -360,7 +375,7 @@ class RequestRouteTest extends TestCase
         );
 
         $submission = $this->getSubmission();
-        $this->subject = $this->registry->getRoute($submission, 'routeId1');
+        $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
         $this->subject->addContext($this->context);
@@ -384,7 +399,7 @@ class RequestRouteTest extends TestCase
     }
 
     /** @test */
-    public function useInternalHeaderNames()
+    public function useInternalHeaderNames(): void
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
 
@@ -397,7 +412,7 @@ class RequestRouteTest extends TestCase
                 'fieldMap' => [
                     'enabled' => true,
                     'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'field', 'config' => [ 'field' => [ 'fieldName' => 'field_a' ] ]], 'modifiers' => []], 'fieldId1', 10),
+                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'field', 'config' => ['field' => ['fieldName' => 'field_a']]], 'modifiers' => []], 'fieldId1', 10),
                     ],
                 ],
             ],
@@ -419,7 +434,7 @@ class RequestRouteTest extends TestCase
         );
 
         $submission = $this->getSubmission();
-        $this->subject = $this->registry->getRoute($submission, 'routeId1');
+        $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
         $this->subject->addContext($this->context);

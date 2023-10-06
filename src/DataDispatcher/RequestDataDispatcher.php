@@ -15,12 +15,19 @@ use Psr\Http\Message\ResponseInterface;
 
 class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatcherInterface
 {
-    protected $method = 'POST';
+    protected string $method = 'POST';
 
-    protected $url = '';
-    protected $headers = [];
-    protected $cookies = [];
+    protected string $url = '';
 
+    /** @var array<string,?string> */
+    protected array $headers = [];
+
+    /** @var array<string,string> */
+    protected array $cookies = [];
+
+    /**
+     * @return array<string,string>
+     */
     protected function getDefaultHeaders(): array
     {
         return [
@@ -41,11 +48,7 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
 
     public function addHeader(string $name, ?string $value): void
     {
-        if ($value === null) {
-            unset($this->headers[$name]);
-        } else {
-            $this->headers[$name] = $value;
-        }
+        $this->headers[$name] = $value;
     }
 
     public function addHeaders(array $headers): void
@@ -102,6 +105,7 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
         if (empty($host)) {
             throw new InvalidUrlException($url);
         }
+
         $this->url = $url;
     }
 
@@ -117,7 +121,9 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
 
     /**
      * url-encode data and parse fields of type DiscreteMultiValue
+     *
      * @param array<string,string|ValueInterface> $data
+     *
      * @return array<string>
      */
     protected function parameterize(array $data): array
@@ -132,18 +138,25 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
                 $params[] = rawurlencode($key) . '=' . rawurlencode($value);
             }
         }
+
         return $params;
     }
 
     /**
-     * @param array<string,string|ValueInterface>
+     * @param array<string,string|ValueInterface> $data
      */
     protected function buildBody(array $data): string
     {
         $params = $this->parameterize($data);
+
         return implode('&', $params);
     }
 
+    /**
+     * @param array<string,string|ValueInterface> $data
+     *
+     * @return array<string,string>
+     */
     protected function buildHeaders(array $data): array
     {
         $requestHeaders = $this->getDefaultHeaders();
@@ -154,23 +167,28 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
                 $requestHeaders[$key] = $value;
             }
         }
+
         return $requestHeaders;
     }
 
+    /**
+     * @param array<string,string|ValueInterface> $data
+     */
     protected function buildCookieJar(array $data): CookieJar
     {
         $requestCookies = [];
-        if (!empty($this->cookies)) {
+        if ($this->cookies !== []) {
             $host = parse_url($this->url, PHP_URL_HOST);
             foreach ($this->cookies as $cKey => $cValue) {
                 // Set up a cookie - name, value AND domain.
                 $cookie = new SetCookie();
                 $cookie->setName($cKey);
-                $cookie->setValue(rawurlencode($cValue));
+                $cookie->setValue(rawurlencode((string)$cValue));
                 $cookie->setDomain($host);
                 $requestCookies[] = $cookie;
             }
         }
+
         return new CookieJar(false, $requestCookies);
     }
 
