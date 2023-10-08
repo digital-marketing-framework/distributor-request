@@ -1,16 +1,17 @@
 {
     "name": "digital-marketing-framework/distributor-request",
-    "description": "DMF distributor route and dispatcher for (http) requests.",
+    "description": "Digital Marketing Framework - Distributor - HTTP Request",
     "license": "GPL-2.0-or-later",
     "type": "library",
     "keywords": [
+        "marketing",
         "framework",
-        "form",
         "data",
-        "submission",
         "relay",
         "distribution",
-        "request"
+        "distributor",
+        "request",
+        "http"
     ],
     "authors": [
         {
