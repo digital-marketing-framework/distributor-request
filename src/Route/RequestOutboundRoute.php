@@ -2,18 +2,18 @@
 
 namespace DigitalMarketingFramework\Distributor\Request\Route;
 
-use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\ContainerSchema;
-use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\MapSchema;
-use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\SchemaInterface;
-use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\StringSchema;
+use DigitalMarketingFramework\Core\SchemaDocument\Schema\ContainerSchema;
+use DigitalMarketingFramework\Core\SchemaDocument\Schema\MapSchema;
+use DigitalMarketingFramework\Core\SchemaDocument\Schema\SchemaInterface;
+use DigitalMarketingFramework\Core\SchemaDocument\Schema\StringSchema;
 use DigitalMarketingFramework\Core\Context\ContextInterface;
 use DigitalMarketingFramework\Core\Exception\DigitalMarketingFrameworkException;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcherInterface;
-use DigitalMarketingFramework\Distributor\Core\Route\Route;
+use DigitalMarketingFramework\Distributor\Core\Route\OutboundRoute;
 use DigitalMarketingFramework\Distributor\Request\DataDispatcher\RequestDataDispatcherInterface;
 use DigitalMarketingFramework\Distributor\Request\Exception\InvalidUrlException;
 
-class RequestRoute extends Route
+class RequestOutboundRoute extends OutboundRoute
 {
     protected const KEY_URL = 'url';
 
@@ -47,6 +47,21 @@ class RequestRoute extends Route
     protected const KEY_HEADERS = 'headers';
 
     protected const DEFAULT_HEADERS = [];
+
+    public static function getIntegrationName(): string
+    {
+        return 'request';
+    }
+
+    public static function getIntegrationLabel(): ?string
+    {
+        return 'HTTP Request';
+    }
+
+    public static function getOutboundRouteListLabel(): ?string
+    {
+        return 'HTTP Request Routes';
+    }
 
     /**
      * @return array<string,string>
