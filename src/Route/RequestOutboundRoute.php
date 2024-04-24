@@ -63,6 +63,11 @@ class RequestOutboundRoute extends OutboundRoute
         return 'HTTP Request Routes';
     }
 
+    public static function getLabel(): ?string
+    {
+        return 'HTTP Request';
+    }
+
     /**
      * @return array<string,string>
      */
