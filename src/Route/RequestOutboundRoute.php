@@ -48,19 +48,14 @@ class RequestOutboundRoute extends OutboundRoute
 
     protected const DEFAULT_HEADERS = [];
 
-    public static function getIntegrationName(): string
-    {
-        return 'request';
-    }
-
     public static function getIntegrationLabel(): ?string
     {
         return 'HTTP Request';
     }
 
-    public static function getOutboundRouteListLabel(): ?string
+    public static function getDefaultIntegrationInfo(): IntegrationInfo
     {
-        return 'HTTP Request Routes';
+        return new IntegrationInfo('request', 'HTTP Request', outboundRouteListLabel: 'HTTP Request Routes');
     }
 
     public static function getLabel(): ?string
