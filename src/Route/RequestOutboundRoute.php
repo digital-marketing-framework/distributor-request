@@ -2,6 +2,8 @@
 
 namespace DigitalMarketingFramework\Distributor\Request\Route;
 
+use DigitalMarketingFramework\Core\Integration\IntegrationInfo;
+use DigitalMarketingFramework\Core\SchemaDocument\RenderingDefinition\RenderingDefinitionInterface;
 use DigitalMarketingFramework\Core\SchemaDocument\Schema\ContainerSchema;
 use DigitalMarketingFramework\Core\SchemaDocument\Schema\MapSchema;
 use DigitalMarketingFramework\Core\SchemaDocument\Schema\SchemaInterface;
@@ -18,6 +20,10 @@ class RequestOutboundRoute extends OutboundRoute
     protected const KEY_URL = 'url';
 
     protected const DEFAULT_URL = '';
+
+    protected const KEY_METHOD = 'method';
+
+    protected const DEFAULT_METHOD = 'POST';
 
     protected const KEYWORD_PASSTHROUGH = '{value}';
 
@@ -47,11 +53,6 @@ class RequestOutboundRoute extends OutboundRoute
     protected const KEY_HEADERS = 'headers';
 
     protected const DEFAULT_HEADERS = [];
-
-    public static function getIntegrationLabel(): ?string
-    {
-        return 'HTTP Request';
-    }
 
     public static function getDefaultIntegrationInfo(): IntegrationInfo
     {
@@ -206,6 +207,11 @@ class RequestOutboundRoute extends OutboundRoute
         return 'request';
     }
 
+    protected function getMethod(): string
+    {
+        return $this->getConfig(static::KEY_METHOD);
+    }
+
     protected function getDispatcher(): DataDispatcherInterface
     {
         $url = $this->getConfig(static::KEY_URL);
@@ -215,6 +221,7 @@ class RequestOutboundRoute extends OutboundRoute
 
         $cookies = $this->getCookies($this->submission->getContext()->getCookies());
         $headers = $this->getHeaders($this->submission->getContext()->getRequestVariables());
+        $method = $this->getMethod();
 
         try {
             /** @var RequestDataDispatcherInterface */
@@ -222,6 +229,7 @@ class RequestOutboundRoute extends OutboundRoute
             $dispatcher->setUrl($url);
             $dispatcher->addCookies($cookies);
             $dispatcher->addHeaders($headers);
+            $dispatcher->setMethod($method);
 
             return $dispatcher;
         } catch (InvalidUrlException $e) {
@@ -249,11 +257,20 @@ class RequestOutboundRoute extends OutboundRoute
         /** @var ContainerSchema $schema */
         $schema = parent::getSchema();
 
-        $urlSchema = new StringSchema();
+        $urlSchema = new StringSchema(static::DEFAULT_URL);
         $urlSchema->getRenderingDefinition()->setLabel('URL');
         $urlSchema->setRequired();
         $urlProperty = $schema->addProperty(static::KEY_URL, $urlSchema);
         $urlProperty->setWeight(50);
+
+        $methodSchema = new StringSchema(static::DEFAULT_METHOD);
+        $methodSchema->getAllowedValues()->addValue('POST');
+        $methodSchema->getAllowedValues()->addValue('GET');
+        $methodSchema->getAllowedValues()->addValue('PUT');
+        $methodSchema->getAllowedValues()->addValue('DELETE');
+        $methodSchema->getRenderingDefinition()->setFormat(RenderingDefinitionInterface::FORMAT_SELECT);
+        $methodProperty = $schema->addProperty(static::KEY_METHOD, $methodSchema);
+        $methodProperty->setWeight(50);
 
         $cookieValueSchema = new StringSchema(static::KEYWORD_PASSTHROUGH);
         $cookieValueSchema->getSuggestedValues()->addValue(static::KEYWORD_PASSTHROUGH);
