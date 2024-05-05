@@ -5,16 +5,16 @@ namespace DigitalMarketingFramework\Distributor\Request;
 use DigitalMarketingFramework\Core\Initialization;
 use DigitalMarketingFramework\Core\Registry\RegistryDomain;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcherInterface;
-use DigitalMarketingFramework\Distributor\Core\Route\RouteInterface;
+use DigitalMarketingFramework\Distributor\Core\Route\OutboundRouteInterface;
 use DigitalMarketingFramework\Distributor\Request\DataDispatcher\RequestDataDispatcher;
-use DigitalMarketingFramework\Distributor\Request\Route\RequestRoute;
+use DigitalMarketingFramework\Distributor\Request\Route\RequestOutboundRoute;
 
 class DistributorRequestInitialization extends Initialization
 {
     protected const PLUGINS = [
         RegistryDomain::DISTRIBUTOR => [
-            RouteInterface::class => [
-                RequestRoute::class,
+            OutboundRouteInterface::class => [
+                RequestOutboundRoute::class,
             ],
             DataDispatcherInterface::class => [
                 RequestDataDispatcher::class,

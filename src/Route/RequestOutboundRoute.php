@@ -2,22 +2,28 @@
 
 namespace DigitalMarketingFramework\Distributor\Request\Route;
 
-use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\ContainerSchema;
-use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\MapSchema;
-use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\SchemaInterface;
-use DigitalMarketingFramework\Core\ConfigurationDocument\SchemaDocument\Schema\StringSchema;
 use DigitalMarketingFramework\Core\Context\ContextInterface;
 use DigitalMarketingFramework\Core\Exception\DigitalMarketingFrameworkException;
+use DigitalMarketingFramework\Core\Integration\IntegrationInfo;
+use DigitalMarketingFramework\Core\SchemaDocument\RenderingDefinition\RenderingDefinitionInterface;
+use DigitalMarketingFramework\Core\SchemaDocument\Schema\ContainerSchema;
+use DigitalMarketingFramework\Core\SchemaDocument\Schema\MapSchema;
+use DigitalMarketingFramework\Core\SchemaDocument\Schema\SchemaInterface;
+use DigitalMarketingFramework\Core\SchemaDocument\Schema\StringSchema;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcherInterface;
-use DigitalMarketingFramework\Distributor\Core\Route\Route;
+use DigitalMarketingFramework\Distributor\Core\Route\OutboundRoute;
 use DigitalMarketingFramework\Distributor\Request\DataDispatcher\RequestDataDispatcherInterface;
 use DigitalMarketingFramework\Distributor\Request\Exception\InvalidUrlException;
 
-class RequestRoute extends Route
+class RequestOutboundRoute extends OutboundRoute
 {
     protected const KEY_URL = 'url';
 
     protected const DEFAULT_URL = '';
+
+    protected const KEY_METHOD = 'method';
+
+    protected const DEFAULT_METHOD = 'POST';
 
     protected const KEYWORD_PASSTHROUGH = '{value}';
 
@@ -47,6 +53,16 @@ class RequestRoute extends Route
     protected const KEY_HEADERS = 'headers';
 
     protected const DEFAULT_HEADERS = [];
+
+    public static function getDefaultIntegrationInfo(): IntegrationInfo
+    {
+        return new IntegrationInfo('request', 'HTTP Request', outboundRouteListLabel: 'HTTP Request Routes');
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'HTTP Request';
+    }
 
     /**
      * @return array<string,string>
@@ -191,6 +207,11 @@ class RequestRoute extends Route
         return 'request';
     }
 
+    protected function getMethod(): string
+    {
+        return $this->getConfig(static::KEY_METHOD);
+    }
+
     protected function getDispatcher(): DataDispatcherInterface
     {
         $url = $this->getConfig(static::KEY_URL);
@@ -200,6 +221,7 @@ class RequestRoute extends Route
 
         $cookies = $this->getCookies($this->submission->getContext()->getCookies());
         $headers = $this->getHeaders($this->submission->getContext()->getRequestVariables());
+        $method = $this->getMethod();
 
         try {
             /** @var RequestDataDispatcherInterface */
@@ -207,6 +229,7 @@ class RequestRoute extends Route
             $dispatcher->setUrl($url);
             $dispatcher->addCookies($cookies);
             $dispatcher->addHeaders($headers);
+            $dispatcher->setMethod($method);
 
             return $dispatcher;
         } catch (InvalidUrlException $e) {
@@ -234,11 +257,20 @@ class RequestRoute extends Route
         /** @var ContainerSchema $schema */
         $schema = parent::getSchema();
 
-        $urlSchema = new StringSchema();
+        $urlSchema = new StringSchema(static::DEFAULT_URL);
         $urlSchema->getRenderingDefinition()->setLabel('URL');
         $urlSchema->setRequired();
         $urlProperty = $schema->addProperty(static::KEY_URL, $urlSchema);
         $urlProperty->setWeight(50);
+
+        $methodSchema = new StringSchema(static::DEFAULT_METHOD);
+        $methodSchema->getAllowedValues()->addValue('POST');
+        $methodSchema->getAllowedValues()->addValue('GET');
+        $methodSchema->getAllowedValues()->addValue('PUT');
+        $methodSchema->getAllowedValues()->addValue('DELETE');
+        $methodSchema->getRenderingDefinition()->setFormat(RenderingDefinitionInterface::FORMAT_SELECT);
+        $methodProperty = $schema->addProperty(static::KEY_METHOD, $methodSchema);
+        $methodProperty->setWeight(50);
 
         $cookieValueSchema = new StringSchema(static::KEYWORD_PASSTHROUGH);
         $cookieValueSchema->getSuggestedValues()->addValue(static::KEYWORD_PASSTHROUGH);
