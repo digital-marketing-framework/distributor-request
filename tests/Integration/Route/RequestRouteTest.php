@@ -8,7 +8,7 @@ use DigitalMarketingFramework\Distributor\Core\Model\DataSet\SubmissionDataSetIn
 use DigitalMarketingFramework\Distributor\Core\Tests\Integration\DistributorRegistryTestTrait;
 use DigitalMarketingFramework\Distributor\Core\Tests\Integration\SubmissionTestTrait;
 use DigitalMarketingFramework\Distributor\Request\DistributorRequestInitialization;
-use DigitalMarketingFramework\Distributor\Request\Route\RequestRoute;
+use DigitalMarketingFramework\Distributor\Request\Route\RequestOutboundRoute;
 use DigitalMarketingFramework\Distributor\Request\Tests\Spy\DataDispatcher\RequestDataDispatcherSpyInterface;
 use DigitalMarketingFramework\Distributor\Request\Tests\Spy\DataDispatcher\SpiedOnRequestDataDispatcher;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -20,7 +20,7 @@ class RequestRouteTest extends TestCase
     use DistributorRegistryTestTrait;
     use SubmissionTestTrait;
 
-    protected RequestRoute $subject;
+    protected RequestOutboundRoute $subject;
 
     protected function setUp(): void
     {
@@ -72,10 +72,10 @@ class RequestRouteTest extends TestCase
             ->willReturnMap($requestVariableMap);
     }
 
-    protected function getRoute(SubmissionDataSetInterface $submission, string $routeId): RequestRoute
+    protected function getRoute(SubmissionDataSetInterface $submission, string $routeId): RequestOutboundRoute
     {
-        $route = $this->registry->getRoute($submission, $routeId);
-        $this->assertInstanceOf(RequestRoute::class, $route);
+        $route = $this->registry->getOutboundRoute($submission, 'request', $routeId);
+        $this->assertInstanceOf(RequestOutboundRoute::class, $route);
 
         return $route;
     }
@@ -84,19 +84,15 @@ class RequestRouteTest extends TestCase
     public function useConfiguredUrlAndPassData(): void
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
+        $this->submissionData['field_a'] = 'value_a';
+
+        $this->configurePassthroughDataMapperGroup('dataMapperGroupId1');
 
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'data' => [
-                'fieldMap' => [
-                    'enabled' => true,
-                    'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
-                    ],
-                ],
-            ],
-        ]);
+            'data' => 'dataMapperGroupId1',
+        ], integrationName: 'request');
 
         $this->configureRequest('', [], []);
         $submission = $this->getSubmission();
@@ -122,17 +118,14 @@ class RequestRouteTest extends TestCase
         $dataDispatcherSpy->expects($this->never())->method('setUrl');
         $dataDispatcherSpy->expects($this->never())->method('send');
 
+        $this->submissionData['field_a'] = 'value_a';
+
+        $this->configurePassthroughDataMapperGroup('dataMapperGroupId1');
+
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
-            'data' => [
-                'fields' => [
-                    'enabled' => true,
-                    'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
-                    ],
-                ],
-            ],
-        ]);
+            'data' => 'dataMapperGroupId1',
+        ], integrationName: 'request');
 
         $this->configureRequest('', [], []);
         $submission = $this->getSubmission();
@@ -156,24 +149,21 @@ class RequestRouteTest extends TestCase
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
 
+        $this->submissionData['field_a'] = 'value_a';
+
+        $this->configurePassthroughDataMapperGroup('dataMapperGroupId1');
+
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'data' => [
-                'fieldMap' => [
-                    'enabled' => true,
-                    'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
-                    ],
-                ],
-            ],
+            'data' => 'dataMapperGroupId1',
             'cookies' => [
                 'cookieItemId1' => $this->createMapItem('cookie1', '{value}', 'cookieItemId1', 10),
                 'cookieItemId2' => $this->createMapItem('cookie2', '{value}', 'cookieItemId2', 20),
                 'cookieItemId3' => $this->createMapItem('cookie3', '{value}', 'cookieItemId3', 30),
                 'cookieItemId4' => $this->createMapItem('specialCookie.*', '{value}', 'cookieItemId4', 40),
             ],
-        ]);
+        ], integrationName: 'request');
 
         $this->configureRequest(
             '',
@@ -221,24 +211,21 @@ class RequestRouteTest extends TestCase
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
 
+        $this->submissionData['field_a'] = 'value_a';
+
+        $this->configurePassthroughDataMapperGroup('dataMapperGroupId1');
+
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'data' => [
-                'fieldMap' => [
-                    'enabled' => true,
-                    'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
-                    ],
-                ],
-            ],
+            'data' => 'dataMapperGroupId1',
             'cookies' => [
                 'cookieItemId1' => $this->createMapItem('cookie1', '{value}', 'cookieItemId1', 10),
                 'cookieItemId2' => $this->createMapItem('cookie2', 'value2b', 'cookieItemId2', 20),
                 'cookieItemId3' => $this->createMapItem('cookie3', '{value}', 'cookieItemId3', 30),
                 'cookieItemId4' => $this->createMapItem('specialCookie.*', '{value}', 'cookieItemId4', 40),
             ],
-        ]);
+        ], integrationName: 'request');
 
         $this->configureRequest(
             '',
@@ -287,23 +274,20 @@ class RequestRouteTest extends TestCase
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
 
+        $this->submissionData['field_a'] = 'value_a';
+
+        $this->configurePassthroughDataMapperGroup('dataMapperGroupId1');
+
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'data' => [
-                'fieldMap' => [
-                    'enabled' => true,
-                    'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
-                    ],
-                ],
-            ],
+            'data' => 'dataMapperGroupId1',
             'headers' => [
                 'headerItemId1' => $this->createMapItem('header1', '{value}', 'headerItemId1', 10),
                 'headerItemId2' => $this->createMapItem('header2', '{value}', 'headerItemId2', 20),
                 'headerItemId3' => $this->createMapItem('header3', '{value}', 'headerItemId3', 30),
             ],
-        ]);
+        ], integrationName: 'request');
 
         $this->configureRequest(
             '',
@@ -346,23 +330,20 @@ class RequestRouteTest extends TestCase
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
 
+        $this->submissionData['field_a'] = 'value_a';
+
+        $this->configurePassthroughDataMapperGroup('dataMapperGroupId1');
+
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'data' => [
-                'fieldMap' => [
-                    'enabled' => true,
-                    'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'constant', 'config' => ['constant' => ['value' => 'value_a']]], 'modifiers' => []], 'fieldId1', 10),
-                    ],
-                ],
-            ],
+            'data' => 'dataMapperGroupId1',
             'headers' => [
                 'headerItemId1' => $this->createMapItem('header1', '{value}', 'headerItemId1', 10),
                 'headerItemId2' => $this->createMapItem('header2', 'value2b', 'headerItemId2', 20),
                 'headerItemId3' => $this->createMapItem('header3', '{value}', 'headerItemId3', 30),
             ],
-        ]);
+        ], integrationName: 'request');
 
         $this->configureRequest(
             '',
@@ -405,23 +386,18 @@ class RequestRouteTest extends TestCase
 
         $this->submissionData['field_a'] = 'value_a';
 
+        $this->configurePassthroughDataMapperGroup('dataMapperGroupId1');
+
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
             'url' => 'https://my-endpoint.tld/api/foo',
-            'data' => [
-                'fieldMap' => [
-                    'enabled' => true,
-                    'fields' => [
-                        'fieldId1' => $this->createMapItem('field_a', ['data' => ['type' => 'field', 'config' => ['field' => ['fieldName' => 'field_a']]], 'modifiers' => []], 'fieldId1', 10),
-                    ],
-                ],
-            ],
+            'data' => 'dataMapperGroupId1',
             'headers' => [
                 'headerItemId1' => $this->createMapItem('Custom-Header', '{value}', 'headerItemId1', 10),
                 'headerItemId2' => $this->createMapItem('User-Agent', '{value}', 'headerItemId2', 20),
                 'headerItemId3' => $this->createMapItem('Content-Type', '{value}', 'headerItemId3', 30),
             ],
-        ]);
+        ], integrationName: 'request');
 
         $this->configureRequest(
             '',
