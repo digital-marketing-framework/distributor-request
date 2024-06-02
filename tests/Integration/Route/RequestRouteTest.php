@@ -70,6 +70,10 @@ class RequestRouteTest extends TestCase
         $this->context->expects($this->any())
             ->method('getRequestVariable')
             ->willReturnMap($requestVariableMap);
+
+        $this->context->expects($this->any())
+            ->method('getRequestVariables')
+            ->willReturn($headers);
     }
 
     protected function getRoute(SubmissionDataSetInterface $submission, string $routeId): RequestOutboundRoute
@@ -99,7 +103,7 @@ class RequestRouteTest extends TestCase
         $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
-        $this->subject->addContext($this->context);
+        $this->subject->addContext($submission->getContext());
         $this->assertEmpty($submission->getContext()->getCookies());
         $this->assertEmpty($submission->getContext()->getRequestVariables());
 
@@ -133,7 +137,7 @@ class RequestRouteTest extends TestCase
         $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
-        $this->subject->addContext($this->context);
+        $this->subject->addContext($submission->getContext());
         $this->assertEmpty($submission->getContext()->getCookies());
         $this->assertEmpty($submission->getContext()->getRequestVariables());
 
@@ -181,7 +185,7 @@ class RequestRouteTest extends TestCase
         $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
-        $this->subject->addContext($this->context);
+        $this->subject->addContext($submission->getContext());
         $this->assertEquals(
             [
                 'cookie1' => 'value1',
@@ -243,7 +247,7 @@ class RequestRouteTest extends TestCase
         $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
-        $this->subject->addContext($this->context);
+        $this->subject->addContext($submission->getContext());
         $this->assertEquals(
             [
                 'cookie1' => 'value1',
@@ -303,7 +307,7 @@ class RequestRouteTest extends TestCase
         $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
-        $this->subject->addContext($this->context);
+        $this->subject->addContext($submission->getContext());
         $this->assertEmpty($submission->getContext()->getCookies());
         $this->assertEquals(
             [
@@ -359,7 +363,7 @@ class RequestRouteTest extends TestCase
         $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
-        $this->subject->addContext($this->context);
+        $this->subject->addContext($submission->getContext());
         $this->assertEmpty($submission->getContext()->getCookies());
         $this->assertEquals(
             [
@@ -413,7 +417,7 @@ class RequestRouteTest extends TestCase
         $this->subject = $this->getRoute($submission, 'routeId1');
 
         // process context
-        $this->subject->addContext($this->context);
+        $this->subject->addContext($submission->getContext());
         $this->assertEmpty($submission->getContext()->getCookies());
         $this->assertEquals(
             [

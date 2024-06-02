@@ -2,7 +2,6 @@
 
 namespace DigitalMarketingFramework\Distributor\Request\Route;
 
-use DigitalMarketingFramework\Core\Context\ContextInterface;
 use DigitalMarketingFramework\Core\Context\WriteableContextInterface;
 use DigitalMarketingFramework\Core\Exception\DigitalMarketingFrameworkException;
 use DigitalMarketingFramework\Core\Integration\IntegrationInfo;
