@@ -2,7 +2,7 @@
 
 namespace DigitalMarketingFramework\Distributor\Request\Route;
 
-use DigitalMarketingFramework\Core\Context\ContextInterface;
+use DigitalMarketingFramework\Core\Context\WriteableContextInterface;
 use DigitalMarketingFramework\Core\Exception\DigitalMarketingFrameworkException;
 use DigitalMarketingFramework\Core\Integration\IntegrationInfo;
 use DigitalMarketingFramework\Core\SchemaDocument\RenderingDefinition\RenderingDefinitionInterface;
@@ -67,7 +67,7 @@ class RequestOutboundRoute extends OutboundRoute
     /**
      * @return array<string,string>
      */
-    protected function getSubmissionCookies(ContextInterface $context): array
+    protected function getSubmissionCookies(): array
     {
         $cookies = [];
         $cookieConfig = $this->getMapConfig(static::KEY_COOKIES);
@@ -78,7 +78,7 @@ class RequestOutboundRoute extends OutboundRoute
             }
         }
 
-        foreach ($context->getCookies() as $cookieName => $cookieValue) {
+        foreach ($this->context->getCookies() as $cookieName => $cookieValue) {
             foreach ($cookieNamePatterns as $cookieNamePattern) {
                 if (preg_match('/^' . $cookieNamePattern . '$/', $cookieName)) {
                     $cookies[$cookieName] = $cookieValue;
@@ -90,12 +90,11 @@ class RequestOutboundRoute extends OutboundRoute
     }
 
     /**
-     * @param array<string,string> $submissionCookies
-     *
      * @return array<string,?string>
      */
-    protected function getCookies(array $submissionCookies): array
+    protected function getCookies(): array
     {
+        $submissionCookies = $this->context->getCookies();
         $cookies = [];
         $cookieConfig = $this->getMapConfig(static::KEY_COOKIES);
         foreach ($cookieConfig as $cookieName => $cookieValue) {
@@ -144,14 +143,14 @@ class RequestOutboundRoute extends OutboundRoute
      *
      * @return array<string,string>
      */
-    protected function getSubmissionHeaders(ContextInterface $context): array
+    protected function getSubmissionHeaders(): array
     {
         $headers = [];
         $headerConfig = $this->getMapConfig(static::KEY_HEADERS);
         foreach ($headerConfig as $headerName => $headerValuePattern) {
             if ($headerValuePattern === static::KEYWORD_PASSTHROUGH) {
                 foreach ($this->getPotentialInternalHeaderNames($headerName) as $potentialHeaderName) {
-                    $headerValue = $context->getRequestVariable($potentialHeaderName);
+                    $headerValue = $this->context->getRequestVariable($potentialHeaderName);
                     if ($headerValue) {
                         $headers[$potentialHeaderName] = $headerValue;
                         break;
@@ -166,12 +165,11 @@ class RequestOutboundRoute extends OutboundRoute
     /**
      * Headers to be sent with the upcoming http request
      *
-     * @param array<string,string> $submissionHeaders
-     *
      * @return array<string,?string>
      */
-    protected function getHeaders(array $submissionHeaders): array
+    protected function getHeaders(): array
     {
+        $submissionHeaders = $this->context->getRequestVariables();
         $headers = [];
         $headerConfig = $this->getMapConfig(static::KEY_HEADERS);
         foreach ($headerConfig as $headerName => $headerValue) {
@@ -219,8 +217,8 @@ class RequestOutboundRoute extends OutboundRoute
             throw new DigitalMarketingFrameworkException('No URL found for request dispatcher');
         }
 
-        $cookies = $this->getCookies($this->submission->getContext()->getCookies());
-        $headers = $this->getHeaders($this->submission->getContext()->getRequestVariables());
+        $cookies = $this->getCookies();
+        $headers = $this->getHeaders();
         $method = $this->getMethod();
 
         try {
@@ -237,18 +235,18 @@ class RequestOutboundRoute extends OutboundRoute
         }
     }
 
-    public function addContext(ContextInterface $context): void
+    public function addContext(WriteableContextInterface $context): void
     {
         parent::addContext($context);
 
-        $cookies = $this->getSubmissionCookies($context);
+        $cookies = $this->getSubmissionCookies();
         foreach ($cookies as $name => $value) {
-            $this->submission->getContext()->setCookie($name, $value);
+            $context->setCookie($name, $value);
         }
 
-        $headers = $this->getSubmissionHeaders($context);
+        $headers = $this->getSubmissionHeaders();
         foreach ($headers as $name => $value) {
-            $this->submission->getContext()->setRequestVariable($name, $value);
+            $context->setRequestVariable($name, $value);
         }
     }
 
