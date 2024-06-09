@@ -217,7 +217,7 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
         }
     }
 
-    public function getPreviewData(array $data): array
+    protected function getPreviewData(array $data): array
     {
         $previewData = parent::getPreviewData($data);
 
