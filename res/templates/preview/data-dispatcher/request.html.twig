@@ -2,7 +2,7 @@
 
 <div>
     <h4>HTTP request config</h4>
-    <p>
+    <div>
         <table>
             <tbody>
                 <tr>
@@ -15,13 +15,13 @@
                 </tr>
             </tbody>
         </table>
-    </p>
+    </div>
 </div>
 
 {% if headers is not empty %}
 <div>
     <h4>Headers</h4>
-    <p>
+    <div>
         <table>
             <thead>
             <tr>
@@ -38,14 +38,14 @@
             {% endfor %}
             </tbody>
         </table>
-    </p>
+    </div>
 </div>
 {% endif %}
 
 {% if cookies is not empty %}
 <div>
     <h4>Cookies</h4>
-    <p>
+    <div>
         <table>
             <thead>
                 <tr>
@@ -62,13 +62,13 @@
             {% endfor %}
             </tbody>
         </table>
-    </p>
+    </div>
 </div>
 {% endif %}
 
 <div>
     <h4>Data</h4>
-    <p>
+    <div>
         {% include 'preview/data-table.html.twig' %}
-    </p>
+    </div>
 </div>
