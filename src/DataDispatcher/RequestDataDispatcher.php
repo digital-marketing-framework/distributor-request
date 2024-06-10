@@ -232,6 +232,8 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
             $previewData['cookies'][$cookie['Name']] = $cookie['Value'];
         }
 
+        $previewData['body'] = $this->buildBody($data);
+
         return $previewData;
     }
 }
