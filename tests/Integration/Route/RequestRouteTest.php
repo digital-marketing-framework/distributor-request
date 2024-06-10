@@ -94,6 +94,7 @@ class RequestRouteTest extends TestCase
 
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
+            'requiredPermission' => 'unregulated:allowed',
             'url' => 'https://my-endpoint.tld/api/foo',
             'data' => 'dataMapperGroupId1',
         ], integrationName: 'request');
@@ -128,6 +129,7 @@ class RequestRouteTest extends TestCase
 
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
+            'requiredPermission' => 'unregulated:allowed',
             'data' => 'dataMapperGroupId1',
         ], integrationName: 'request');
 
@@ -159,6 +161,7 @@ class RequestRouteTest extends TestCase
 
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
+            'requiredPermission' => 'unregulated:allowed',
             'url' => 'https://my-endpoint.tld/api/foo',
             'data' => 'dataMapperGroupId1',
             'cookies' => [
@@ -221,6 +224,7 @@ class RequestRouteTest extends TestCase
 
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
+            'requiredPermission' => 'unregulated:allowed',
             'url' => 'https://my-endpoint.tld/api/foo',
             'data' => 'dataMapperGroupId1',
             'cookies' => [
@@ -284,6 +288,7 @@ class RequestRouteTest extends TestCase
 
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
+            'requiredPermission' => 'unregulated:allowed',
             'url' => 'https://my-endpoint.tld/api/foo',
             'data' => 'dataMapperGroupId1',
             'headers' => [
@@ -340,6 +345,7 @@ class RequestRouteTest extends TestCase
 
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
+            'requiredPermission' => 'unregulated:allowed',
             'url' => 'https://my-endpoint.tld/api/foo',
             'data' => 'dataMapperGroupId1',
             'headers' => [
@@ -394,6 +400,7 @@ class RequestRouteTest extends TestCase
 
         $this->addRouteConfiguration('request', 'routeId1', 10, [
             'enabled' => true,
+            'requiredPermission' => 'unregulated:allowed',
             'url' => 'https://my-endpoint.tld/api/foo',
             'data' => 'dataMapperGroupId1',
             'headers' => [

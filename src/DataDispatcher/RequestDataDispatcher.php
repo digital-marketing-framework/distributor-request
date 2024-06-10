@@ -216,4 +216,22 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
             throw new DigitalMarketingFrameworkException($e->getMessage(), $e->getCode(), $e);
         }
     }
+
+    protected function getPreviewData(array $data): array
+    {
+        $previewData = parent::getPreviewData($data);
+
+        $previewData['url'] = $this->url;
+
+        $previewData['method'] = $this->method;
+
+        $previewData['headers'] = $this->buildHeaders($data);
+
+        $previewData['cookies'] = [];
+        foreach ($this->buildCookieJar($data)->toArray() as $cookie) {
+            $previewData['cookies'][$cookie['Name']] = $cookie['Value'];
+        }
+
+        return $previewData;
+    }
 }
