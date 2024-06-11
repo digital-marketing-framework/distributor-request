@@ -221,9 +221,9 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
     {
         $previewData = parent::getPreviewData($data);
 
-        $previewData['url'] = $this->url;
+        $previewData['config']['URL'] = $this->url;
 
-        $previewData['method'] = $this->method;
+        $previewData['config']['Method'] = $this->method;
 
         $previewData['headers'] = $this->buildHeaders($data);
 
