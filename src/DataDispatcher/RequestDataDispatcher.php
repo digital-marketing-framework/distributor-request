@@ -132,10 +132,10 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
         foreach ($data as $key => $value) {
             if ($value instanceof DiscreteMultiValue) {
                 foreach ($value as $multiValue) {
-                    $params[] = rawurlencode($key) . '=' . rawurlencode($multiValue);
+                    $params[] = rawurlencode($key) . '=' . rawurlencode((string)$multiValue);
                 }
             } else {
-                $params[] = rawurlencode($key) . '=' . rawurlencode($value);
+                $params[] = rawurlencode($key) . '=' . rawurlencode((string)$value);
             }
         }
 
@@ -215,6 +215,19 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
         } catch (GuzzleException $e) {
             throw new DigitalMarketingFrameworkException($e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    protected function transformDataForPreview(array $data): array
+    {
+        return array_map(static function (ValueInterface|string $value) {
+            if ($value instanceof DiscreteMultiValue) {
+                return array_map(static function (ValueInterface|string $multiValue) {
+                    return (string)$multiValue;
+                }, $value->toArray());
+            }
+
+            return (string)$value;
+        }, $data);
     }
 
     protected function getPreviewData(array $data): array
