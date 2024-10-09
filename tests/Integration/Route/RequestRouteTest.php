@@ -29,10 +29,11 @@ class RequestRouteTest extends TestCase
         $this->initRegistry();
         $initialization = new DistributorRequestInitialization();
         $initialization->initMetaData($this->registry);
-        $initialization->initGlobalConfiguration(RegistryDomain::CORE, $this->registry);
-        $initialization->initGlobalConfiguration(RegistryDomain::DISTRIBUTOR, $this->registry);
-        $initialization->initServices(RegistryDomain::CORE, $this->registry);
-        $initialization->initServices(RegistryDomain::DISTRIBUTOR, $this->registry);
+        // NOTE use these init methods if the initalization object changes
+        // $initialization->initGlobalConfiguration(RegistryDomain::CORE, $this->registry);
+        // $initialization->initGlobalConfiguration(RegistryDomain::DISTRIBUTOR, $this->registry);
+        // $initialization->initServices(RegistryDomain::CORE, $this->registry);
+        // $initialization->initServices(RegistryDomain::DISTRIBUTOR, $this->registry);
         $initialization->initPlugins(RegistryDomain::CORE, $this->registry);
         $initialization->initPlugins(RegistryDomain::DISTRIBUTOR, $this->registry);
 

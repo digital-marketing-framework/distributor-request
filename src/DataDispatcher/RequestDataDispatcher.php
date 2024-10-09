@@ -102,7 +102,7 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
     public function setUrl(string $url): void
     {
         $host = parse_url($url, PHP_URL_HOST);
-        if (empty($host)) {
+        if (!is_string($host) || $host === '') {
             throw new InvalidUrlException($url);
         }
 
@@ -183,7 +183,7 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
                 // Set up a cookie - name, value AND domain.
                 $cookie = new SetCookie();
                 $cookie->setName($cKey);
-                $cookie->setValue(rawurlencode((string)$cValue));
+                $cookie->setValue(rawurlencode($cValue));
                 $cookie->setDomain($host);
                 $requestCookies[] = $cookie;
             }
@@ -221,7 +221,7 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
     {
         return array_map(static function (ValueInterface|string $value) {
             if ($value instanceof DiscreteMultiValue) {
-                return array_map(static function (ValueInterface|string $multiValue) {
+                return array_map(static function (ValueInterface|string $multiValue): string {
                     return (string)$multiValue;
                 }, $value->toArray());
             }

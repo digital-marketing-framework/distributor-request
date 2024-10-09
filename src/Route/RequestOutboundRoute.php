@@ -142,7 +142,7 @@ class RequestOutboundRoute extends OutboundRoute
     protected function getPotentialInternalHeaderNames(string $headerName): array
     {
         // example: 'User-Agent' => ['User-Agent', 'HTTP_USER_AGENT', 'USER_AGENT']
-        $name = preg_replace_callback('/-([A-Z])/', static function (array $matches) {
+        $name = preg_replace_callback('/-([A-Z])/', static function (array $matches): string {
             return '_' . $matches[1];
         }, $headerName);
         $name = strtoupper($name);
