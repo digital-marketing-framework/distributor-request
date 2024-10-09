@@ -67,10 +67,18 @@ class RequestOutboundRoute extends OutboundRoute
     /**
      * @return array<string,string>
      */
+    protected function getCookieConfig(): array
+    {
+        return $this->getMapConfig(static::KEY_COOKIES);
+    }
+
+    /**
+     * @return array<string,string>
+     */
     protected function getSubmissionCookies(): array
     {
         $cookies = [];
-        $cookieConfig = $this->getMapConfig(static::KEY_COOKIES);
+        $cookieConfig = $this->getCookieConfig();
         $cookieNamePatterns = [];
         foreach ($cookieConfig as $cookieName => $cookieValue) {
             if ($cookieValue === static::KEYWORD_PASSTHROUGH) {
@@ -96,7 +104,7 @@ class RequestOutboundRoute extends OutboundRoute
     {
         $submissionCookies = $this->context->getCookies();
         $cookies = [];
-        $cookieConfig = $this->getMapConfig(static::KEY_COOKIES);
+        $cookieConfig = $this->getCookieConfig();
         foreach ($cookieConfig as $cookieName => $cookieValue) {
             switch ($cookieValue) {
                 case static::KEYWORD_PASSTHROUGH:
@@ -118,6 +126,14 @@ class RequestOutboundRoute extends OutboundRoute
         }
 
         return $cookies;
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    protected function getHeaderConfig(): array
+    {
+        return $this->getMapConfig(static::KEY_HEADERS);
     }
 
     /**
@@ -146,7 +162,7 @@ class RequestOutboundRoute extends OutboundRoute
     protected function getSubmissionHeaders(): array
     {
         $headers = [];
-        $headerConfig = $this->getMapConfig(static::KEY_HEADERS);
+        $headerConfig = $this->getHeaderConfig();
         foreach ($headerConfig as $headerName => $headerValuePattern) {
             if ($headerValuePattern === static::KEYWORD_PASSTHROUGH) {
                 foreach ($this->getPotentialInternalHeaderNames($headerName) as $potentialHeaderName) {
@@ -171,7 +187,7 @@ class RequestOutboundRoute extends OutboundRoute
     {
         $submissionHeaders = $this->context->getRequestVariables();
         $headers = [];
-        $headerConfig = $this->getMapConfig(static::KEY_HEADERS);
+        $headerConfig = $this->getHeaderConfig();
         foreach ($headerConfig as $headerName => $headerValue) {
             switch ($headerValue) {
                 case static::KEYWORD_PASSTHROUGH:
