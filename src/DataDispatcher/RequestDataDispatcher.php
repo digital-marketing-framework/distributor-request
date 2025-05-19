@@ -230,9 +230,9 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
         }, $data);
     }
 
-    protected function getPreviewData(array $data): array
+    public function preview(array $data): array
     {
-        $previewData = parent::getPreviewData($data);
+        $previewData = parent::preview($data);
 
         $previewData['config']['URL'] = $this->url;
 
