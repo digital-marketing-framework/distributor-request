@@ -23,12 +23,12 @@
     ],
     "homepage": "https://www.mediatis.de",
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "digital-marketing-framework/distributor-core": "dev-feature/MFR-136-t3-13",
         "guzzlehttp/guzzle": "^7.0"
     },
     "require-dev": {
-        "mediatis/coding-standards": "^1.0"
+        "mediatis/coding-standards": "^2.0"
     },
     "minimum-stability": "dev",
     "autoload": {

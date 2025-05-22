@@ -221,9 +221,7 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
     {
         return array_map(static function (ValueInterface|string $value) {
             if ($value instanceof DiscreteMultiValue) {
-                return array_map(static function (ValueInterface|string $multiValue): string {
-                    return (string)$multiValue;
-                }, $value->toArray());
+                return array_map(static fn (ValueInterface|string $multiValue): string => (string)$multiValue, $value->toArray());
             }
 
             return (string)$value;
