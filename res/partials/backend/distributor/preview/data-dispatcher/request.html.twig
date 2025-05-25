@@ -1,0 +1,26 @@
+{% extends 'distributor/preview/data-dispatcher.html.twig' %}
+
+{% block previewCustom %}
+    {% if headers is not empty %}
+        <div>
+            <h4>Headers</h4>
+            <div>
+                {% include 'data-table.html.twig' with { 'tableData': headers, 'tableKeyHeader': 'Name', 'tableValueHeader': 'Value' } %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if cookies is not empty %}
+        <div>
+            <h4>Cookies</h4>
+            <div>
+                {% include 'data-table.html.twig' with { 'tableData': cookies, 'tableKeyHeader': 'Name', 'tableValueHeader': 'Value' } %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div>
+        <h4>Body</h4>
+        {% include 'note.html.twig' with { body, preformatted: true } %}
+    </div>
+{% endblock %}

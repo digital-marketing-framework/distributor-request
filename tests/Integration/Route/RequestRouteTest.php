@@ -11,10 +11,12 @@ use DigitalMarketingFramework\Distributor\Request\DistributorRequestInitializati
 use DigitalMarketingFramework\Distributor\Request\Route\RequestOutboundRoute;
 use DigitalMarketingFramework\Distributor\Request\Tests\Spy\DataDispatcher\RequestDataDispatcherSpyInterface;
 use DigitalMarketingFramework\Distributor\Request\Tests\Spy\DataDispatcher\SpiedOnRequestDataDispatcher;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-/** @covers RequestRoute */
+#[CoversClass(RequestOutboundRoute::class)]
 class RequestRouteTest extends TestCase
 {
     use DistributorRegistryTestTrait;
@@ -85,7 +87,7 @@ class RequestRouteTest extends TestCase
         return $route;
     }
 
-    /** @test */
+    #[Test]
     public function useConfiguredUrlAndPassData(): void
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
@@ -117,7 +119,7 @@ class RequestRouteTest extends TestCase
         $this->subject->process();
     }
 
-    /** @test */
+    #[Test]
     public function throwExceptionWithoutConfiguredUrl(): void
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
@@ -151,7 +153,7 @@ class RequestRouteTest extends TestCase
 
     // cookie functionality
 
-    /** @test */
+    #[Test]
     public function passThroughCookiesAsPlainList(): void
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
@@ -214,7 +216,7 @@ class RequestRouteTest extends TestCase
         $this->subject->process();
     }
 
-    /** @test */
+    #[Test]
     public function defineCookiesWithAssocList(): void
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
@@ -278,7 +280,7 @@ class RequestRouteTest extends TestCase
 
     // header functionality
 
-    /** @test */
+    #[Test]
     public function passThroughHeadersAsPlainList(): void
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
@@ -335,7 +337,7 @@ class RequestRouteTest extends TestCase
         $this->subject->process();
     }
 
-    /** @test */
+    #[Test]
     public function defineHeadersWithAssocList(): void
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();
@@ -390,7 +392,7 @@ class RequestRouteTest extends TestCase
         $this->subject->process();
     }
 
-    /** @test */
+    #[Test]
     public function useInternalHeaderNames(): void
     {
         $dataDispatcherSpy = $this->registerRequestDataDispatcherSpy();

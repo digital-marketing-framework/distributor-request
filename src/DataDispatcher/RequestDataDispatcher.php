@@ -196,7 +196,7 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
     {
         $statusCode = $response->getStatusCode();
         if ($statusCode < 200 || $statusCode >= 400) {
-            throw new DigitalMarketingFrameworkException('Response status code indicates an error: ' . $statusCode);
+            throw new DigitalMarketingFrameworkException('Status code: ' . $statusCode);
         }
     }
 
@@ -213,7 +213,7 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
             $response = $client->request($this->method, $this->url, $requestOptions);
             $this->checkResponse($response);
         } catch (GuzzleException $e) {
-            throw new DigitalMarketingFrameworkException($e->getMessage(), $e->getCode(), $e);
+            throw new DigitalMarketingFrameworkException('Status code: ' . $e->getCode(), $e->getCode(), $e);
         }
     }
 
@@ -221,18 +221,16 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
     {
         return array_map(static function (ValueInterface|string $value) {
             if ($value instanceof DiscreteMultiValue) {
-                return array_map(static function (ValueInterface|string $multiValue): string {
-                    return (string)$multiValue;
-                }, $value->toArray());
+                return array_map(static fn (ValueInterface|string $multiValue): string => (string)$multiValue, $value->toArray());
             }
 
             return (string)$value;
         }, $data);
     }
 
-    protected function getPreviewData(array $data): array
+    public function preview(array $data): array
     {
-        $previewData = parent::getPreviewData($data);
+        $previewData = parent::preview($data);
 
         $previewData['config']['URL'] = $this->url;
 
