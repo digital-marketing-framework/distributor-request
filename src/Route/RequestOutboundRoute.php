@@ -165,7 +165,7 @@ class RequestOutboundRoute extends OutboundRoute
             if ($headerValuePattern === static::KEYWORD_PASSTHROUGH) {
                 foreach ($this->getPotentialInternalHeaderNames($headerName) as $potentialHeaderName) {
                     $headerValue = $this->context->getRequestVariable($potentialHeaderName);
-                    if ($headerValue) {
+                    if ($headerValue !== null && $headerValue !== '') {
                         $headers[$potentialHeaderName] = $headerValue;
                         break;
                     }
@@ -226,8 +226,8 @@ class RequestOutboundRoute extends OutboundRoute
 
     protected function getDispatcher(): DataDispatcherInterface
     {
-        $url = $this->getConfig(static::KEY_URL);
-        if (!$url) {
+        $url = $this->getStringConfig(static::KEY_URL);
+        if ($url === '') {
             throw new DigitalMarketingFrameworkException('No URL found for request dispatcher');
         }
 

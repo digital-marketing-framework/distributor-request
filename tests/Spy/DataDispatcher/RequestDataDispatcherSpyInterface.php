@@ -7,12 +7,12 @@ use DigitalMarketingFramework\Distributor\Core\Tests\Spy\DataDispatcher\DataDisp
 interface RequestDataDispatcherSpyInterface extends DataDispatcherSpyInterface
 {
     /**
-     * @param array<string,?string> $headers
+     * @param array<string,string> $headers
      */
     public function addHeaders(array $headers): void;
 
     /**
-     * @param array<string,?string> $cookies
+     * @param array<string,string> $cookies
      */
     public function addCookies(array $cookies): void;
 
