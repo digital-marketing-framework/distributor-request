@@ -24,7 +24,7 @@
     "homepage": "https://www.mediatis.de",
     "require": {
         "php": "^8.2",
-        "digital-marketing-framework/distributor-core": "^3.3.3",
+        "digital-marketing-framework/distributor-core": "^3.5",
         "guzzlehttp/guzzle": "^7.0"
     },
     "require-dev": {
