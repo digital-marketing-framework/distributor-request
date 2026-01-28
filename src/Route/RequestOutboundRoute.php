@@ -3,10 +3,13 @@
 namespace DigitalMarketingFramework\Distributor\Request\Route;
 
 use DigitalMarketingFramework\Core\Context\WriteableContextInterface;
+use DigitalMarketingFramework\Core\DataProcessor\ValueSource\ConstantValueSource;
 use DigitalMarketingFramework\Core\Exception\DigitalMarketingFrameworkException;
 use DigitalMarketingFramework\Core\Integration\IntegrationInfo;
 use DigitalMarketingFramework\Core\SchemaDocument\RenderingDefinition\RenderingDefinitionInterface;
 use DigitalMarketingFramework\Core\SchemaDocument\Schema\ContainerSchema;
+use DigitalMarketingFramework\Core\SchemaDocument\Schema\Custom\ValueSchema;
+use DigitalMarketingFramework\Core\SchemaDocument\Schema\CustomSchema;
 use DigitalMarketingFramework\Core\SchemaDocument\Schema\MapSchema;
 use DigitalMarketingFramework\Core\SchemaDocument\Schema\SchemaInterface;
 use DigitalMarketingFramework\Core\SchemaDocument\Schema\StringSchema;
@@ -224,12 +227,23 @@ class RequestOutboundRoute extends OutboundRoute
         return $this->getConfig(static::KEY_METHOD);
     }
 
-    protected function getDispatcher(): DataDispatcherInterface
+    protected function getUrl(): string
     {
-        $url = $this->getStringConfig(static::KEY_URL);
-        if ($url === '') {
+        $url = $this->getConfig(static::KEY_URL);
+        if (!is_string($url)) {
+            $url = $this->dataProcessor->processValue($url, $this->getDataProcessorContext());
+        }
+
+        if ($url === null || $url === '') {
             throw new DigitalMarketingFrameworkException('No URL found for request dispatcher');
         }
+
+        return (string)$url;
+    }
+
+    protected function getDispatcher(): DataDispatcherInterface
+    {
+        $url = $this->getUrl();
 
         $cookies = $this->getCookies();
         $headers = $this->getHeaders();
@@ -264,16 +278,24 @@ class RequestOutboundRoute extends OutboundRoute
         }
     }
 
+    protected static function getUrlSchema(): ?SchemaInterface
+    {
+        $urlSchema = new CustomSchema(ValueSchema::TYPE, ValueSchema::createStandardValueConfiguration('constant', [ConstantValueSource::KEY_VALUE => static::DEFAULT_URL]));
+        $urlSchema->getRenderingDefinition()->setLabel('URL');
+
+        return $urlSchema;
+    }
+
     public static function getSchema(): SchemaInterface
     {
         /** @var ContainerSchema $schema */
         $schema = parent::getSchema();
 
-        $urlSchema = new StringSchema(static::DEFAULT_URL);
-        $urlSchema->getRenderingDefinition()->setLabel('URL');
-        $urlSchema->setRequired();
-        $urlProperty = $schema->addProperty(static::KEY_URL, $urlSchema);
-        $urlProperty->setWeight(50);
+        $urlSchema = static::getUrlSchema();
+        if ($urlSchema instanceof SchemaInterface) {
+            $urlProperty = $schema->addProperty(static::KEY_URL, $urlSchema);
+            $urlProperty->setWeight(50);
+        }
 
         $methodSchema = new StringSchema(static::DEFAULT_METHOD);
         $methodSchema->getAllowedValues()->addValue('POST');
