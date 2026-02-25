@@ -259,7 +259,7 @@ class RequestOutboundRoute extends OutboundRoute
 
             return $dispatcher;
         } catch (InvalidUrlException $e) {
-            throw new DigitalMarketingFrameworkException($e->getMessage());
+            throw new DigitalMarketingFrameworkException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
