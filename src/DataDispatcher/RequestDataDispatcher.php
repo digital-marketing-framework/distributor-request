@@ -3,6 +3,7 @@
 namespace DigitalMarketingFramework\Distributor\Request\DataDispatcher;
 
 use DigitalMarketingFramework\Core\Exception\DigitalMarketingFrameworkException;
+use DigitalMarketingFramework\Core\Model\Data\Value\MultiValueInterface;
 use DigitalMarketingFramework\Core\Model\Data\Value\ValueInterface;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcher;
 use DigitalMarketingFramework\Distributor\Core\Model\Data\Value\DiscreteMultiValue;
@@ -15,9 +16,15 @@ use Psr\Http\Message\ResponseInterface;
 
 class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatcherInterface
 {
+    public const MULTI_VALUE_FORMAT_FLAT = 'flat';
+
+    public const MULTI_VALUE_FORMAT_NESTED = 'nested';
+
     protected string $method = 'POST';
 
     protected string $url = '';
+
+    protected string $multiValueFormat = self::MULTI_VALUE_FORMAT_FLAT;
 
     /** @var array<string,?string> */
     protected array $headers = [];
@@ -30,10 +37,15 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
      */
     protected function getDefaultHeaders(): array
     {
-        return [
-            'Content-Type' => 'application/x-www-form-urlencoded',
+        $headers = [
             'Accept' => '*/*',
         ];
+
+        if (!$this->isGetRequest()) {
+            $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        }
+
+        return $headers;
     }
 
     public function getHeaders(): array
@@ -119,14 +131,30 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
         $this->method = $method;
     }
 
+    public function getMultiValueFormat(): string
+    {
+        return $this->multiValueFormat;
+    }
+
+    public function setMultiValueFormat(string $multiValueFormat): void
+    {
+        $this->multiValueFormat = $multiValueFormat;
+    }
+
+    protected function isGetRequest(): bool
+    {
+        return strtoupper($this->method) === 'GET';
+    }
+
     /**
-     * url-encode data and parse fields of type DiscreteMultiValue
+     * Flatten a value into URL-encoded key=value parameter strings (flat mode).
+     * DiscreteMultiValue repeats the key, everything else is cast to string.
      *
      * @param array<string,string|ValueInterface> $data
      *
      * @return array<string>
      */
-    protected function parameterize(array $data): array
+    protected function parameterizeFlat(array $data): array
     {
         $params = [];
         foreach ($data as $key => $value) {
@@ -143,6 +171,63 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
     }
 
     /**
+     * Recursively flatten a single value into URL-encoded parameter strings (nested mode).
+     * DiscreteMultiValue repeats the key at the current nesting level.
+     * MultiValue uses bracket notation for sub-keys.
+     * Scalar values are encoded directly.
+     *
+     * @param array<string> $params collected parameter strings (modified by reference)
+     */
+    protected function flattenToParams(string $key, string|ValueInterface $value, array &$params): void
+    {
+        if ($value instanceof DiscreteMultiValue) {
+            foreach ($value as $item) {
+                $this->flattenToParams($key, $item, $params);
+            }
+        } elseif ($value instanceof MultiValueInterface) {
+            foreach ($value as $subKey => $item) {
+                $this->flattenToParams($key . '[' . $subKey . ']', $item, $params);
+            }
+        } else {
+            $params[] = rawurlencode($key) . '=' . rawurlencode((string)$value);
+        }
+    }
+
+    /**
+     * Flatten data into URL-encoded key=value parameter strings (nested mode).
+     * MultiValues produce bracket-notation keys, DiscreteMultiValues repeat keys.
+     *
+     * @param array<string,string|ValueInterface> $data
+     *
+     * @return array<string>
+     */
+    protected function parameterizeNested(array $data): array
+    {
+        $params = [];
+        foreach ($data as $key => $value) {
+            $this->flattenToParams($key, $value, $params);
+        }
+
+        return $params;
+    }
+
+    /**
+     * URL-encode data into key=value parameter strings.
+     *
+     * @param array<string,string|ValueInterface> $data
+     *
+     * @return array<string>
+     */
+    protected function parameterize(array $data): array
+    {
+        if ($this->multiValueFormat === self::MULTI_VALUE_FORMAT_NESTED) {
+            return $this->parameterizeNested($data);
+        }
+
+        return $this->parameterizeFlat($data);
+    }
+
+    /**
      * @param array<string,string|ValueInterface> $data
      */
     protected function buildBody(array $data): string
@@ -150,6 +235,23 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
         $params = $this->parameterize($data);
 
         return implode('&', $params);
+    }
+
+    /**
+     * Build the full URL with query string for GET requests.
+     *
+     * @param array<string,string|ValueInterface> $data
+     */
+    protected function buildGetUrl(array $data): string
+    {
+        $queryString = $this->buildBody($data);
+        if ($queryString === '') {
+            return $this->url;
+        }
+
+        $separator = str_contains($this->url, '?') ? '&' : '?';
+
+        return $this->url . $separator . $queryString;
     }
 
     /**
@@ -203,14 +305,20 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
     public function send(array $data): void
     {
         $requestOptions = [
-            'body' => $this->buildBody($data),
             'cookies' => $this->buildCookieJar($data),
             'headers' => $this->buildHeaders($data),
         ];
 
+        if ($this->isGetRequest()) {
+            $url = $this->buildGetUrl($data);
+        } else {
+            $url = $this->url;
+            $requestOptions['body'] = $this->buildBody($data);
+        }
+
         try {
             $client = new Client();
-            $response = $client->request($this->method, $this->url, $requestOptions);
+            $response = $client->request($this->method, $url, $requestOptions);
             $this->checkResponse($response);
         } catch (GuzzleException $e) {
             throw new DigitalMarketingFrameworkException('Status code: ' . $e->getCode(), $e->getCode(), $e);
@@ -236,6 +344,8 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
 
         $previewData['config']['Method'] = $this->method;
 
+        $previewData['config']['MultiValueFormat'] = $this->multiValueFormat;
+
         $previewData['headers'] = $this->buildHeaders($data);
 
         $previewData['cookies'] = [];
@@ -243,7 +353,11 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
             $previewData['cookies'][$cookie['Name']] = $cookie['Value'];
         }
 
-        $previewData['body'] = $this->buildBody($data);
+        if ($this->isGetRequest()) {
+            $previewData['query'] = $this->buildGetUrl($data);
+        } else {
+            $previewData['body'] = $this->buildBody($data);
+        }
 
         return $previewData;
     }

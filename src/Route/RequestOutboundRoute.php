@@ -15,6 +15,7 @@ use DigitalMarketingFramework\Core\SchemaDocument\Schema\SchemaInterface;
 use DigitalMarketingFramework\Core\SchemaDocument\Schema\StringSchema;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcherInterface;
 use DigitalMarketingFramework\Distributor\Core\Route\OutboundRoute;
+use DigitalMarketingFramework\Distributor\Request\DataDispatcher\RequestDataDispatcher;
 use DigitalMarketingFramework\Distributor\Request\DataDispatcher\RequestDataDispatcherInterface;
 use DigitalMarketingFramework\Distributor\Request\Exception\InvalidUrlException;
 
@@ -56,6 +57,10 @@ class RequestOutboundRoute extends OutboundRoute
     public const KEY_HEADERS = 'headers';
 
     public const DEFAULT_HEADERS = [];
+
+    public const KEY_MULTI_VALUE_FORMAT = 'multiValueFormat';
+
+    public const DEFAULT_MULTI_VALUE_FORMAT = RequestDataDispatcher::MULTI_VALUE_FORMAT_FLAT;
 
     public static function getDefaultIntegrationInfo(): IntegrationInfo
     {
@@ -227,6 +232,11 @@ class RequestOutboundRoute extends OutboundRoute
         return $this->getConfig(static::KEY_METHOD);
     }
 
+    protected function getMultiValueFormat(): string
+    {
+        return $this->getStringConfig(static::KEY_MULTI_VALUE_FORMAT);
+    }
+
     protected function getUrl(): string
     {
         $url = $this->getConfig(static::KEY_URL);
@@ -256,6 +266,7 @@ class RequestOutboundRoute extends OutboundRoute
             $dispatcher->addCookies($cookies);
             $dispatcher->addHeaders($headers);
             $dispatcher->setMethod($method);
+            $dispatcher->setMultiValueFormat($this->getMultiValueFormat());
 
             return $dispatcher;
         } catch (InvalidUrlException $e) {
@@ -305,6 +316,14 @@ class RequestOutboundRoute extends OutboundRoute
         $methodSchema->getRenderingDefinition()->setFormat(RenderingDefinitionInterface::FORMAT_SELECT);
         $methodProperty = $schema->addProperty(static::KEY_METHOD, $methodSchema);
         $methodProperty->setWeight(50);
+
+        $multiValueFormatSchema = new StringSchema(static::DEFAULT_MULTI_VALUE_FORMAT);
+        $multiValueFormatSchema->getAllowedValues()->addValue(RequestDataDispatcher::MULTI_VALUE_FORMAT_FLAT);
+        $multiValueFormatSchema->getAllowedValues()->addValue(RequestDataDispatcher::MULTI_VALUE_FORMAT_NESTED);
+        $multiValueFormatSchema->getRenderingDefinition()->setFormat(RenderingDefinitionInterface::FORMAT_SELECT);
+        $multiValueFormatSchema->getRenderingDefinition()->setLabel('Multi-Value Format');
+        $multiValueFormatSchema->getRenderingDefinition()->setHint('Flat: multi-value fields are joined into a comma-separated string. Nested: multi-value fields use bracket notation (e.g. field[0], field[1]).');
+        $schema->addProperty(static::KEY_MULTI_VALUE_FORMAT, $multiValueFormatSchema);
 
         $cookieValueSchema = new StringSchema(static::KEYWORD_PASSTHROUGH);
         $cookieValueSchema->getSuggestedValues()->addValue(static::KEYWORD_PASSTHROUGH);

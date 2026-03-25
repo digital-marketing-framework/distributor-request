@@ -55,4 +55,8 @@ interface RequestDataDispatcherInterface extends DataDispatcherInterface
     public function getMethod(): string;
 
     public function setMethod(string $method): void;
+
+    public function getMultiValueFormat(): string;
+
+    public function setMultiValueFormat(string $multiValueFormat): void;
 }
