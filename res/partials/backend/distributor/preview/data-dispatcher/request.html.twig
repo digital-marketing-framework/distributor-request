@@ -19,8 +19,15 @@
         </div>
     {% endif %}
 
-    <div>
-        <h4>Body</h4>
-        {% include 'note.html.twig' with { body, preformatted: true } %}
-    </div>
+    {% if query is defined and query is not empty %}
+        <div>
+            <h4>Query URL</h4>
+            {% include 'note.html.twig' with { body: query, preformatted: true } %}
+        </div>
+    {% else %}
+        <div>
+            <h4>Body</h4>
+            {% include 'note.html.twig' with { body, preformatted: true } %}
+        </div>
+    {% endif %}
 {% endblock %}
