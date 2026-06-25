@@ -4,9 +4,24 @@ namespace DigitalMarketingFramework\Distributor\Request\DataDispatcher;
 
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcherInterface;
 use DigitalMarketingFramework\Distributor\Request\Exception\InvalidUrlException;
+use DigitalMarketingFramework\Distributor\Request\ResponseValidation\ResponseValidationInterface;
 
 interface RequestDataDispatcherInterface extends DataDispatcherInterface
 {
+    public function addResponseValidation(ResponseValidationInterface $responseValidation): void;
+
+    /**
+     * @return array<ResponseValidationInterface>
+     */
+    public function getResponseValidations(): array;
+
+    /**
+     * @param array<ResponseValidationInterface> $responseValidations
+     */
+    public function setResponseValidations(array $responseValidations): void;
+
+    public function clearResponseValidations(): void;
+
     /**
      * @return array<string,?string>
      */
