@@ -6,6 +6,8 @@ use DigitalMarketingFramework\Core\Model\Data\Value\MultiValue;
 use DigitalMarketingFramework\Distributor\Core\Model\Data\Value\DiscreteMultiValue;
 use DigitalMarketingFramework\Distributor\Core\Registry\RegistryInterface;
 use DigitalMarketingFramework\Distributor\Request\DataDispatcher\RequestDataDispatcher;
+use DigitalMarketingFramework\Distributor\Request\ResponseValidation\ResponseValidationInterface;
+use DigitalMarketingFramework\Distributor\Request\ResponseValidation\StatusCodeResponseValidation;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -194,5 +196,41 @@ class RequestDataDispatcherTest extends TestCase
     {
         $this->subject->setMultiValueFormat(RequestDataDispatcher::MULTI_VALUE_FORMAT_NESTED);
         $this->assertSame(RequestDataDispatcher::MULTI_VALUE_FORMAT_NESTED, $this->subject->getMultiValueFormat());
+    }
+
+    // -- Response validations --
+
+    #[Test]
+    public function statusCodeValidationIsRegisteredByDefault(): void
+    {
+        $validations = $this->subject->getResponseValidations();
+        $this->assertCount(1, $validations);
+        $this->assertInstanceOf(StatusCodeResponseValidation::class, $validations[0]);
+    }
+
+    #[Test]
+    public function clearResponseValidationsRemovesAll(): void
+    {
+        $this->subject->clearResponseValidations();
+        $this->assertSame([], $this->subject->getResponseValidations());
+    }
+
+    #[Test]
+    public function addResponseValidationAppends(): void
+    {
+        $extra = $this->createMock(ResponseValidationInterface::class);
+        $this->subject->addResponseValidation($extra);
+
+        $validations = $this->subject->getResponseValidations();
+        $this->assertCount(2, $validations);
+        $this->assertSame($extra, $validations[1]);
+    }
+
+    #[Test]
+    public function setResponseValidationsReplacesTheWholeSet(): void
+    {
+        $custom = $this->createMock(ResponseValidationInterface::class);
+        $this->subject->setResponseValidations([$custom]);
+        $this->assertSame([$custom], $this->subject->getResponseValidations());
     }
 }

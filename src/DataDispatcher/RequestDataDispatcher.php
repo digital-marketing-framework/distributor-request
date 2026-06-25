@@ -7,7 +7,10 @@ use DigitalMarketingFramework\Core\Model\Data\Value\MultiValueInterface;
 use DigitalMarketingFramework\Core\Model\Data\Value\ValueInterface;
 use DigitalMarketingFramework\Distributor\Core\DataDispatcher\DataDispatcher;
 use DigitalMarketingFramework\Distributor\Core\Model\Data\Value\DiscreteMultiValue;
+use DigitalMarketingFramework\Distributor\Core\Registry\RegistryInterface;
 use DigitalMarketingFramework\Distributor\Request\Exception\InvalidUrlException;
+use DigitalMarketingFramework\Distributor\Request\ResponseValidation\ResponseValidationInterface;
+use DigitalMarketingFramework\Distributor\Request\ResponseValidation\StatusCodeResponseValidation;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Cookie\SetCookie;
@@ -31,6 +34,41 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
 
     /** @var array<string,string> */
     protected array $cookies = [];
+
+    /** @var array<ResponseValidationInterface> */
+    protected array $responseValidations = [];
+
+    public function __construct(string $keyword, RegistryInterface $registry)
+    {
+        parent::__construct($keyword, $registry);
+        $this->responseValidations = [new StatusCodeResponseValidation()];
+    }
+
+    public function addResponseValidation(ResponseValidationInterface $responseValidation): void
+    {
+        $this->responseValidations[] = $responseValidation;
+    }
+
+    /**
+     * @return array<ResponseValidationInterface>
+     */
+    public function getResponseValidations(): array
+    {
+        return $this->responseValidations;
+    }
+
+    /**
+     * @param array<ResponseValidationInterface> $responseValidations
+     */
+    public function setResponseValidations(array $responseValidations): void
+    {
+        $this->responseValidations = $responseValidations;
+    }
+
+    public function clearResponseValidations(): void
+    {
+        $this->responseValidations = [];
+    }
 
     /**
      * @return array<string,string>
@@ -296,9 +334,8 @@ class RequestDataDispatcher extends DataDispatcher implements RequestDataDispatc
 
     protected function checkResponse(ResponseInterface $response): void
     {
-        $statusCode = $response->getStatusCode();
-        if ($statusCode < 200 || $statusCode >= 400) {
-            throw new DigitalMarketingFrameworkException('Status code: ' . $statusCode);
+        foreach ($this->responseValidations as $responseValidation) {
+            $responseValidation->validate($response);
         }
     }
 
